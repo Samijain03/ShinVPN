@@ -170,6 +170,3 @@ python -m pytest tests/ -v
 
 ---
 
-## 📄 License
-
-MIT © [Delusional Club Industries](https://delusional.club)
