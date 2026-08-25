@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShinVPN — Delusional Club Industries</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- HOLOGRAPHIC BACKGROUND CANVAS -->
+  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+
+  <div class="delusional-app">
+    <!-- TOP BRAND BAR -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <div class="logo-core"></div>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">SHIN<span class="highlight">VPN</span></span>
+          <span class="brand-sub">DELUSIONAL CLUB INDUSTRIES</span>
+        </div>
+      </div>
+      <div class="header-badges">
+        <button class="audio-toggle" id="btn-audio-toggle" title="Toggle Synth Audio FX">
+          <span id="audio-icon">🔊</span> FX: <span id="audio-status">ON</span>
+        </button>
+        <div class="badge mode-badge" id="transport-badge">⚡ UDP HIGH-SPEED</div>
+        <div class="badge status-badge" id="status-badge">DISCONNECTED</div>
+      </div>
+    </header>
+
+    <!-- MAIN BODY GRID -->
+    <main class="app-main">
+      <!-- LEFT COLUMN: POWER RING & LIVE GAUGES -->
+      <section class="panel hero-panel">
+        <div class="connection-hub">
+          <div class="pulse-ring" id="pulse-ring"></div>
+          <div class="orbit-particle p1"></div>
+          <div class="orbit-particle p2"></div>
+          <button class="connect-button" id="btn-toggle-connect">
+            <div class="button-ring"></div>
+            <div class="button-inner">
+              <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              <span class="btn-text" id="btn-text">CONNECT</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="status-readout">
+          <span class="status-subtitle" id="status-desc">SYSTEM IDLE & READY</span>
+          <span class="session-timer" id="session-timer">00:00:00</span>
+        </div>
+
+        <!-- SPEED & METRICS BAR -->
+        <div class="speed-grid">
+          <div class="speed-card dl-card">
+            <span class="metric-label">DOWNLOAD</span>
+            <div class="metric-val-group">
+              <span class="metric-val" id="val-dl">0.00</span>
+              <span class="metric-unit">Mbps</span>
+            </div>
+            <div class="mini-bar"><div class="mini-bar-fill dl-fill" id="bar-dl"></div></div>
+          </div>
+          <div class="speed-card ul-card">
+            <span class="metric-label">UPLOAD</span>
+            <div class="metric-val-group">
+              <span class="metric-val" id="val-ul">0.00</span>
+              <span class="metric-unit">Mbps</span>
+            </div>
+            <div class="mini-bar"><div class="mini-bar-fill ul-fill" id="bar-ul"></div></div>
+          </div>
+          <div class="speed-card ping-card">
+            <span class="metric-label">LATENCY</span>
+            <div class="metric-val-group">
+              <span class="metric-val" id="val-ping">0.0</span>
+              <span class="metric-unit">ms</span>
+            </div>
+            <div class="ping-status-dot" id="dot-ping"></div>
+          </div>
+        </div>
+
+        <!-- SPEEDTEST ACTION BAR -->
+        <div class="speedtest-bar">
+          <button class="btn-speedtest" id="btn-speedtest">
+            <span class="st-icon">🚀</span>
+            <span id="st-text">RUN TUNNEL SPEEDTEST</span>
+          </button>
+          <div class="speedtest-results" id="st-results" style="display: none;">
+            <span>Peak ⬇️ <b id="res-dl">0.0</b> Mbps</span>
+            <span>Peak ⬆️ <b id="res-ul">0.0</b> Mbps</span>
+          </div>
+        </div>
+
+        <!-- LIVE SPEED CHART -->
+        <div class="chart-container">
+          <canvas id="traffic-chart"></canvas>
+        </div>
+
+        <!-- SESSION TRAFFIC STATS -->
+        <div class="session-stats-bar">
+          <div class="stat-pill">Data In: <b id="stat-data-in">0.0 KB</b></div>
+          <div class="stat-pill">Data Out: <b id="stat-data-out">0.0 KB</b></div>
+          <div class="stat-pill">Packets: <b id="stat-packets">0 / 0</b></div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: SETTINGS, CRYPTO HUB, & CONSOLE -->
+      <section class="panel side-panel">
+        <!-- SERVER SELECTION & NODE SELECTOR -->
+        <div class="card glass-card">
+          <div class="card-header-flex">
+            <h3 class="card-title">SERVER NODES</h3>
+            <span class="node-count-badge">4 AVAILABLE</span>
+          </div>
+
+          <div class="node-grid" id="node-grid">
+            <div class="node-card active" data-endpoint="127.0.0.1:51820">
+              <div class="node-flag">⚡</div>
+              <div class="node-info">
+                <span class="node-name">Local Core Node</span>
+                <span class="node-endpoint">127.0.0.1:51820</span>
+              </div>
+              <span class="node-ping-badge green">1.2 ms</span>
+            </div>
+            <div class="node-card" data-endpoint="tokyo.delusional.club:51820">
+              <div class="node-flag">🇯🇵</div>
+              <div class="node-info">
+                <span class="node-name">Tokyo Alpha-1</span>
+                <span class="node-endpoint">103.28.44.12:51820</span>
+              </div>
+              <span class="node-ping-badge green">18 ms</span>
+            </div>
+            <div class="node-card" data-endpoint="frankfurt.delusional.club:51820">
+              <div class="node-flag">🇩🇪</div>
+              <div class="node-info">
+                <span class="node-name">Frankfurt Vault-7</span>
+                <span class="node-endpoint">45.142.112.5:51820</span>
+              </div>
+              <span class="node-ping-badge amber">42 ms</span>
+            </div>
+            <div class="node-card" data-endpoint="singapore.delusional.club:51820">
+              <div class="node-flag">🇸🇬</div>
+              <div class="node-info">
+                <span class="node-name">Singapore Nexus-9</span>
+                <span class="node-endpoint">139.180.201.88:51820</span>
+              </div>
+              <span class="node-ping-badge green">28 ms</span>
+            </div>
+          </div>
+
+          <div class="custom-node-toggle">
+            <button class="btn-custom-toggle" id="btn-custom-toggle">+ Custom Node Configuration</button>
+          </div>
+
+          <div class="custom-node-fields" id="custom-node-fields" style="display: none;">
+            <div class="input-group">
+              <label for="input-custom-host">CUSTOM HOST / IP</label>
+              <input type="text" id="input-custom-host" class="delusional-input" placeholder="127.0.0.1">
+            </div>
+            <div class="input-group">
+              <label for="input-custom-port">PORT</label>
+              <input type="number" id="input-custom-port" class="delusional-input" value="51820">
+            </div>
+          </div>
+
+          <div class="input-group" style="margin-top: 10px;">
+            <label for="transport-select">ENCAPSULATION PROTOCOL</label>
+            <select id="transport-select" class="delusional-select">
+              <option value="udp">⚡ Encrypted UDP Datagram (Ultra Low-Latency Direct)</option>
+              <option value="stealth">🛡️ Stealth WebSocket Camouflage (Bypass DPI & Firewalls)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- SECURITY & SPLIT TUNNEL TOGGLES -->
+        <div class="card glass-card">
+          <h3 class="card-title">SECURITY & LEAK PROTECTION</h3>
+          <div class="toggle-group">
+            <div class="toggle-item">
+              <div class="toggle-info">
+                <span class="toggle-title">🛑 Firewall Kill Switch</span>
+                <span class="toggle-desc">Blocks all outbound traffic if tunnel drops unexpectedly</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="chk-killswitch">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-item">
+              <div class="toggle-info">
+                <span class="toggle-title">🛡️ DNS Leak Shield</span>
+                <span class="toggle-desc">Forces Cloudflare 1.1.1.1 secure encrypted resolvers</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="chk-dns" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-item">
+              <div class="toggle-info">
+                <span class="toggle-title">🌐 Windows System Proxy</span>
+                <span class="toggle-desc">Auto-routes browser & OS traffic through ShinVPN gateway</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="chk-sysproxy" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CRYPTOGRAPHIC TELEMETRY HUB -->
+        <div class="card glass-card crypto-card">
+          <div class="card-header-flex">
+            <h3 class="card-title">DELUSIONAL SECURITY CIPHER</h3>
+            <button class="btn-copy-key" id="btn-copy-key" title="Copy Client Public Key">📋 COPY KEY</button>
+          </div>
+          <div class="crypto-meta-grid">
+            <div class="crypto-meta-item">
+              <span class="c-label">Key Exchange</span>
+              <span class="c-val">Curve25519 (X25519)</span>
+            </div>
+            <div class="crypto-meta-item">
+              <span class="c-label">AEAD Cipher</span>
+              <span class="c-val">ChaCha20-Poly1305</span>
+            </div>
+            <div class="crypto-meta-item">
+              <span class="c-label">Key Derivation</span>
+              <span class="c-val">HKDF-SHA256</span>
+            </div>
+            <div class="crypto-meta-item">
+              <span class="c-label">Replay Filter</span>
+              <span class="c-val">128-Bit Sliding Window</span>
+            </div>
+            <div class="crypto-meta-item">
+              <span class="c-label">Assigned VIP</span>
+              <span class="c-val highlight-cyan" id="disp-vip">0.0.0.0</span>
+            </div>
+            <div class="crypto-meta-item">
+              <span class="c-label">Rekey Limit</span>
+              <span class="c-val highlight-purple" id="disp-rekey">1024 MB</span>
+            </div>
+            <div class="crypto-meta-item full-width">
+              <span class="c-label">Client Public Identity</span>
+              <span class="c-val text-truncate font-mono" id="disp-client-key">Loading...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIVE CONSOLE LOG -->
+        <div class="card glass-card log-card">
+          <div class="card-header-flex">
+            <h3 class="card-title">DELUSIONAL TERMINAL</h3>
+            <div class="log-actions">
+              <button class="btn-log-action" id="btn-clear-logs">CLEAR</button>
+            </div>
+          </div>
+          <div class="console-box" id="console-box">
+            <div class="log-entry system">[SYSTEM] ShinVPN Delusional Core v1.0 online.</div>
+            <div class="log-entry info">[INFO] Cryptographic primitives verified (X25519 / ChaCha20-Poly1305).</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="app-footer">
+      <span>SHINVPN v1.0.0 — DELUSIONAL CLUB INDUSTRIES</span>
+      <span class="sec-flag">ZERO-KNOWLEDGE AUTHENTICATED TUNNEL</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

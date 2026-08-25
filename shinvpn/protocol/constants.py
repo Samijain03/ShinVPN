@@ -1,0 +1,40 @@
+"""
+ShinVPN Protocol Constants
+==========================
+Delusional Club Industries Network Protocol Definitions.
+"""
+
+# Protocol Identification
+MAGIC_BYTES = b"SHIN"
+PROTOCOL_VERSION = 1
+
+# Packet Types
+MSG_HANDSHAKE_INIT = 0x01
+MSG_HANDSHAKE_RESP = 0x02
+MSG_DATA_PACKET    = 0x03
+MSG_KEEPALIVE      = 0x04
+MSG_REKEY_INIT     = 0x05
+MSG_REKEY_RESP     = 0x06
+MSG_DISCONNECT     = 0x07
+MSG_PROXY_CONNECT   = 0x08
+MSG_PROXY_DATA      = 0x09
+MSG_PROXY_CLOSE     = 0x0A
+MSG_SPEEDTEST_REQ   = 0x0B
+MSG_SPEEDTEST_DATA  = 0x0C
+
+# Default Ports & Tuning
+DEFAULT_PORT_UDP = 51820
+DEFAULT_PORT_STEALTH = 8443
+DEFAULT_MTU = 1420
+MAX_PACKET_SIZE = 65535
+
+# KeepAlive & Timeout settings (seconds)
+KEEPALIVE_INTERVAL = 10.0
+KEEPALIVE_TIMEOUT = 30.0
+HANDSHAKE_TIMEOUT = 5.0
+MAX_HANDSHAKE_ATTEMPTS = 5
+
+# Virtual Subnet Defaults
+DEFAULT_VIRTUAL_SUBNET = "10.8.0.0/24"
+DEFAULT_SERVER_VIRTUAL_IP = "10.8.0.1"
+DEFAULT_DNS_SERVERS = ["1.1.1.1", "1.0.0.1"]

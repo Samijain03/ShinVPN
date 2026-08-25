@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shinvpn"
+version = "1.0.0"
+description = "ShinVPN by Delusional Club Industries - High-Performance, Cyberpunk Encrypted Tunnel Suite"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Delusional Club Industries", email = "core@delusional.club"}
+]
+keywords = ["vpn", "tunnel", "chacha20-poly1305", "x25519", "cyberpunk", "wintun", "networking"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Networking",
+    "Topic :: Security :: Cryptography"
+]
+dependencies = [
+    "cryptography>=42.0.0",
+    "pynacl>=1.5.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.28.0",
+    "websockets>=12.0",
+    "pywebview>=5.0.0",
+    "pystray>=0.19.5",
+    "psutil>=5.9.0",
+    "rich>=13.7.0",
+    "typer>=0.9.0"
+]
+
+[project.scripts]
+shinvpn = "shinvpn.cli.main:app"
+shinvpn-gui = "shinvpn.gui.gui_app:main"
+shinvpn-server = "shinvpn.server.server:main_cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shinvpn*"]

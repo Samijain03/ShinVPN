@@ -1,0 +1,18 @@
+{
+  "server_host": "127.0.0.1",
+  "udp_port": 51820,
+  "stealth_port": 8443,
+  "transport_type": "udp",
+  "client_private_key": "cEBuCclr1sjZ2cvxpcElB3Sp9WmJZPpvFm6Qvjkk5mI=",
+  "client_public_key": "YN5XZop9yCpNqHgYJoQ5NVfqD7perd28fzgWiN+//Qs=",
+  "server_public_key": "ag/LGJbxeYGPmaFNdNtOy+9XQ5D3Ie8eOoLJDxDLbg4=",
+  "enable_killswitch": false,
+  "enable_dns_shield": true,
+  "enable_system_proxy": true,
+  "local_proxy_port": 10808,
+  "dns_servers": [
+    "1.1.1.1",
+    "1.0.0.1"
+  ],
+  "mtu": 1420
+}

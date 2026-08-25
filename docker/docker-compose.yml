@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  shinvpn-server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    container_name: shinvpn-server
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "51820:51820/udp"
+      - "8443:8443/tcp"
+    volumes:
+      - ./server.json:/app/server.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    sysctls:
+      - net.ipv4.ip_forward=1

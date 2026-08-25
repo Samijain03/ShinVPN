@@ -1,0 +1,22 @@
+{
+  "listen_host": "0.0.0.0",
+  "udp_port": 51820,
+  "stealth_port": 8443,
+  "enable_stealth": true,
+  "private_key": "0KXuO4yauKpr8awjP9CKOqYWk/YwKRRh9prXrdlEIXk=",
+  "public_key": "ag/LGJbxeYGPmaFNdNtOy+9XQ5D3Ie8eOoLJDxDLbg4=",
+  "virtual_subnet": "10.8.0.0/24",
+  "server_virtual_ip": "10.8.0.1",
+  "dns_servers": [
+    "1.1.1.1",
+    "1.0.0.1"
+  ],
+  "mtu": 1420,
+  "allowed_peers": [
+    {
+      "name": "Dev Client",
+      "public_key": "YN5XZop9yCpNqHgYJoQ5NVfqD7perd28fzgWiN+//Qs=",
+      "allowed_ip": "10.8.0.2"
+    }
+  ]
+}
