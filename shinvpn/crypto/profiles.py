@@ -95,9 +95,17 @@ class MultiDeviceProfileManager:
         if not p:
             raise ValueError(f"Profile {profile_id} not found")
 
-        return f"""# ShinVPN — Delusional Club Industries
-# Client Device: {p.name} ({p.device_type.upper()})
-[Interface]
+        # Auto-fetch server public key if not supplied
+        if not server_pubkey:
+            srv_path = Path("server.json")
+            if srv_path.exists():
+                try:
+                    srv_cfg = ServerConfig.load_from_file(srv_path)
+                    server_pubkey = srv_cfg.public_key
+                except Exception:
+                    pass
+
+        return f"""[Interface]
 PrivateKey = {p.private_key}
 Address = {p.allocated_vip}/32
 DNS = 1.1.1.1, 1.0.0.1
@@ -106,45 +114,63 @@ DNS = 1.1.1.1, 1.0.0.1
 PublicKey = {server_pubkey}
 Endpoint = {server_endpoint}
 AllowedIPs = 0.0.0.0/0, ::/0
-PersistentKeepalive = 15
+PersistentKeepalive = 25
 """
 
-    def generate_svg_qr(self, data_str: str) -> str:
+    def generate_svg_qr(self, data_str: str, dark_color: str = "#000000", light_color: str = "#ffffff") -> str:
         """
-        Renders a crisp, dependency-free SVG QR Code representation.
-        Encodes config text into high-contrast cyberpunk SVG elements.
+        Renders an authentic, 100% scannable ISO/IEC 18004 SVG QR Code.
+        Fully compatible with iOS Camera, Android Google Lens, and WireGuard mobile apps.
         """
-        # Compact SVG visual data matrix
-        escaped_data = data_str.replace('"', '&quot;').replace('<', '&lt;').replace('>', '&gt;')
-        svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" width="220" height="220" class="delusional-qr-svg">
-  <rect width="100%" height="100%" fill="#0a0c14" rx="10"/>
-  <!-- Corner Finders -->
-  <rect x="20" y="20" width="40" height="40" fill="none" stroke="#00f5d4" stroke-width="4" rx="4"/>
-  <rect x="30" y="30" width="20" height="20" fill="#00f5d4"/>
-  
-  <rect x="160" y="20" width="40" height="40" fill="none" stroke="#00f5d4" stroke-width="4" rx="4"/>
-  <rect x="170" y="30" width="20" height="20" fill="#00f5d4"/>
-  
-  <rect x="20" y="160" width="40" height="40" fill="none" stroke="#00f5d4" stroke-width="4" rx="4"/>
-  <rect x="30" y="170" width="20" height="20" fill="#00f5d4"/>
-  
-  <!-- Cyberpunk Matrix Pattern -->
-  <g fill="#9d4edd" opacity="0.85">
-    <rect x="80" y="25" width="8" height="8"/><rect x="100" y="25" width="16" height="8"/><rect x="130" y="25" width="8" height="8"/>
-    <rect x="80" y="45" width="16" height="8"/><rect x="110" y="45" width="8" height="8"/><rect x="135" y="45" width="12" height="8"/>
-    <rect x="25" y="80" width="8" height="16"/><rect x="45" y="85" width="12" height="8"/><rect x="70" y="80" width="8" height="8"/>
-    <rect x="90" y="75" width="20" height="8"/><rect x="120" y="80" width="16" height="16"/><rect x="150" y="75" width="8" height="8"/>
-    <rect x="170" y="85" width="18" height="8"/><rect x="80" y="105" width="8" height="8"/><rect x="100" y="100" width="16" height="8"/>
-    <rect x="130" y="110" width="8" height="8"/><rect x="150" y="105" width="16" height="8"/><rect x="80" y="130" width="16" height="8"/>
-    <rect x="110" y="125" width="8" height="16"/><rect x="130" y="135" width="12" height="8"/><rect x="155" y="130" width="8" height="8"/>
-    <rect x="80" y="165" width="8" height="8"/><rect x="100" y="170" width="16" height="8"/><rect x="130" y="165" width="8" height="8"/>
-    <rect x="80" y="185" width="16" height="8"/><rect x="110" y="185" width="8" height="8"/><rect x="135" y="185" width="12" height="8"/>
-  </g>
-  <!-- Brand Watermark Core -->
-  <rect x="98" y="98" width="24" height="24" fill="#07080d" stroke="#00f5d4" stroke-width="2" rx="4"/>
-  <text x="110" y="114" fill="#00f5d4" font-size="10" font-family="JetBrains Mono, monospace" font-weight="900" text-anchor="middle">S</text>
+        try:
+            import qrcode
+            qr = qrcode.QRCode(
+                version=None,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=8,
+                border=4,
+            )
+            qr.add_data(data_str)
+            qr.make(fit=True)
+            matrix = qr.get_matrix()
+            num_rows = len(matrix)
+            box_size = 8
+            svg_size = num_rows * box_size
+
+            rects = []
+            for r, row in enumerate(matrix):
+                for c, val in enumerate(row):
+                    if val:
+                        rects.append(f'<rect x="{c * box_size}" y="{r * box_size}" width="{box_size}" height="{box_size}" fill="{dark_color}"/>')
+
+            rects_str = "\n  ".join(rects)
+            svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {svg_size} {svg_size}" width="240" height="240" class="delusional-qr-svg">
+  <rect width="100%" height="100%" fill="{light_color}" rx="6"/>
+  {rects_str}
 </svg>"""
-        return svg
+            return svg
+        except Exception as e:
+            logger.error(f"QR code generation error: {e}")
+            return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60"><text x="10" y="30" fill="red">QR Error: {e}</text></svg>'
+
+    def generate_ascii_qr(self, data_str: str) -> str:
+        """Renders an ASCII QR code for direct terminal rendering."""
+        try:
+            import qrcode
+            import io
+            qr = qrcode.QRCode(
+                version=None,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=1,
+                border=1,
+            )
+            qr.add_data(data_str)
+            qr.make(fit=True)
+            f = io.StringIO()
+            qr.print_ascii(out=f, invert=True)
+            return f.getvalue()
+        except Exception as e:
+            return f"QR Error: {e}"
 
     def save_profiles(self) -> None:
         """Persists profiles database to disk."""

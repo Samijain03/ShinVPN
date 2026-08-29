@@ -293,6 +293,33 @@ def run_add_profile(
     console.print(f"Public Key: [purple]{prof.public_key}[/purple]")
 
 
+@app.command("profile-qr")
+def run_show_qr(
+    profile_id: str = typer.Argument(..., help="Profile ID or Name to display QR for"),
+    endpoint: str = typer.Option("", "--endpoint", "-e", help="Custom server endpoint host:port")
+):
+    """Render terminal ASCII QR Code for 1-click mobile WireGuard import."""
+    from ..crypto.profiles import profile_manager
+    # Find by ID or name
+    p = profile_manager.profiles.get(profile_id)
+    if not p:
+        for prof in profile_manager.profiles.values():
+            if prof.name.lower() == profile_id.lower():
+                p = prof
+                break
+
+    if not p:
+        console.print(f"[red]Error: Profile '{profile_id}' not found.[/red]")
+        return
+
+    ep = endpoint or "127.0.0.1:51820"
+    conf = profile_manager.generate_wireguard_conf(p.id, server_endpoint=ep)
+    ascii_qr = profile_manager.generate_ascii_qr(conf)
+    console.print(f"[cyan]📱 ShinVPN WireGuard QR Code for '{p.name}' ({ep}):[/cyan]\n")
+    print(ascii_qr)
+    console.print("[dim]Scan this QR code using the WireGuard app on your phone.[/dim]\n")
+
+
 @app.command("proxy-reset")
 def run_proxy_reset():
     """Reset and disable Windows WinINet system proxy settings."""

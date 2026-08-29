@@ -778,10 +778,20 @@ body {
 }
 
 .qr-svg-wrapper {
-  background: #0a0c14;
-  padding: 8px;
+  background: #ffffff;
+  padding: 12px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 245, 212, 0.3);
+  border: 2px solid var(--color-cyan);
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.4);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.qr-svg-wrapper svg {
+  display: block;
+  width: 220px;
+  height: 220px;
 }
 
 /* CYBERSHIELD STATS */

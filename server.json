@@ -32,6 +32,16 @@
       "name": "Test Phone",
       "public_key": "8OI1BznSLBvNw8F1eKvJktWCYiHP5FNvCv5AX87CeHU=",
       "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "iPhone-15",
+      "public_key": "l7Y6a8vtw3OhF4dq0RHCU0yAmFg/ktI/nAMrxlDjIh8=",
+      "allowed_ip": "10.8.0.3"
+    },
+    {
+      "name": "Test Phone",
+      "public_key": "7uZIKfaj4jNoSr+yJ4qQtK4VtRkQtOa8n51iu7fZeFs=",
+      "allowed_ip": "10.8.0.2"
     }
   ]
 }

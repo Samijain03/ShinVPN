@@ -281,11 +281,26 @@ async def api_generate_profile(req: CreateProfileRequest):
 
 
 @app.get("/api/profiles/{profile_id}/qr")
-async def api_get_profile_qr(profile_id: str):
+async def api_get_profile_qr(profile_id: str, host: Optional[str] = None):
     from ..crypto.profiles import profile_manager
-    conf = profile_manager.generate_wireguard_conf(profile_id, "127.0.0.1:51820")
+    import socket
+    
+    # Auto-detect local LAN IP so mobile device on Wi-Fi can connect
+    if not host:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            detected_ip = s.getsockname()[0]
+            s.close()
+        except Exception:
+            detected_ip = "127.0.0.1"
+        endpoint = f"{detected_ip}:51820"
+    else:
+        endpoint = host if ":" in host else f"{host}:51820"
+
+    conf = profile_manager.generate_wireguard_conf(profile_id, server_endpoint=endpoint)
     svg_qr = profile_manager.generate_svg_qr(conf)
-    return {"success": True, "svg": svg_qr, "config": conf}
+    return {"success": True, "svg": svg_qr, "config": conf, "endpoint": endpoint}
 
 
 # 4. Multi-Hop / Double VPN Config
