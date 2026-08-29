@@ -24,6 +24,10 @@
         </div>
       </div>
       <div class="header-badges">
+        <!-- CYBERSHIELD STATS BADGE -->
+        <div class="badge shield-badge" id="badge-adblock" title="CyberShield Ad & Malware Sinkhole">
+          🛡️ BLOCKED: <span id="val-ads-blocked">0</span>
+        </div>
         <button class="audio-toggle" id="btn-audio-toggle" title="Toggle Synth Audio FX">
           <span id="audio-icon">🔊</span> FX: <span id="audio-status">ON</span>
         </button>
@@ -32,16 +36,24 @@
       </div>
     </header>
 
+    <!-- NAVIGATION TABS -->
+    <nav class="feature-nav">
+      <button class="nav-btn active" data-tab="dashboard">⚡ TUNNEL DASHBOARD</button>
+      <button class="nav-btn" data-tab="multihop">🔀 DOUBLE VPN (ONION)</button>
+      <button class="nav-btn" data-tab="splittunnel">🎯 PROCESS MATRIX</button>
+      <button class="nav-btn" data-tab="mobileqr">📱 MOBILE QR HUB</button>
+      <button class="nav-btn" data-tab="cybershield">🛡️ CYBERSHIELD</button>
+    </nav>
+
     <!-- MAIN BODY GRID -->
     <main class="app-main">
-      <!-- LEFT COLUMN: POWER RING & LIVE GAUGES -->
+      <!-- LEFT COLUMN: POWER RING, SPEED, & MAP -->
       <section class="panel hero-panel">
-        <div class="connection-hub">
+        <div class="connection-hub" id="conn-hub-trigger">
           <div class="pulse-ring" id="pulse-ring"></div>
           <div class="orbit-particle p1"></div>
           <div class="orbit-particle p2"></div>
           <button class="connect-button" id="btn-toggle-connect">
-            <div class="button-ring"></div>
             <div class="button-inner">
               <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -96,6 +108,15 @@
           </div>
         </div>
 
+        <!-- HOLOGRAPHIC RADAR MAP -->
+        <div class="radar-container">
+          <div class="radar-header">
+            <span>🌐 GLOBAL RADAR TOPOLOGY</span>
+            <span class="radar-live-dot">● LIVE HOPS</span>
+          </div>
+          <canvas id="radar-canvas" class="radar-canvas"></canvas>
+        </div>
+
         <!-- LIVE SPEED CHART -->
         <div class="chart-container">
           <canvas id="traffic-chart"></canvas>
@@ -109,107 +130,226 @@
         </div>
       </section>
 
-      <!-- RIGHT COLUMN: SETTINGS, CRYPTO HUB, & CONSOLE -->
+      <!-- RIGHT COLUMN: DYNAMIC TAB PANELS -->
       <section class="panel side-panel">
-        <!-- SERVER SELECTION & NODE SELECTOR -->
-        <div class="card glass-card">
-          <div class="card-header-flex">
-            <h3 class="card-title">SERVER NODES</h3>
-            <span class="node-count-badge">4 AVAILABLE</span>
+        <!-- TAB 1: MAIN DASHBOARD & NODES -->
+        <div class="tab-content active" id="tab-dashboard">
+          <div class="card glass-card">
+            <div class="card-header-flex">
+              <h3 class="card-title">SERVER NODES</h3>
+              <span class="node-count-badge">4 AVAILABLE</span>
+            </div>
+
+            <div class="node-grid" id="node-grid">
+              <div class="node-card active" data-id="local" data-endpoint="127.0.0.1:51820">
+                <div class="node-flag">⚡</div>
+                <div class="node-info">
+                  <span class="node-name">Local Core Node</span>
+                  <span class="node-endpoint">127.0.0.1:51820</span>
+                </div>
+                <span class="node-ping-badge green">1.2 ms</span>
+              </div>
+              <div class="node-card" data-id="tokyo" data-endpoint="tokyo.delusional.club:51820">
+                <div class="node-flag">🇯🇵</div>
+                <div class="node-info">
+                  <span class="node-name">Tokyo Alpha-1</span>
+                  <span class="node-endpoint">103.28.44.12:51820</span>
+                </div>
+                <span class="node-ping-badge green">18 ms</span>
+              </div>
+              <div class="node-card" data-id="frankfurt" data-endpoint="frankfurt.delusional.club:51820">
+                <div class="node-flag">🇩🇪</div>
+                <div class="node-info">
+                  <span class="node-name">Frankfurt Vault-7</span>
+                  <span class="node-endpoint">45.142.112.5:51820</span>
+                </div>
+                <span class="node-ping-badge amber">42 ms</span>
+              </div>
+              <div class="node-card" data-id="singapore" data-endpoint="singapore.delusional.club:51820">
+                <div class="node-flag">🇸🇬</div>
+                <div class="node-info">
+                  <span class="node-name">Singapore Nexus-9</span>
+                  <span class="node-endpoint">139.180.201.88:51820</span>
+                </div>
+                <span class="node-ping-badge green">28 ms</span>
+              </div>
+            </div>
+
+            <div class="custom-node-toggle">
+              <button class="btn-custom-toggle" id="btn-custom-toggle">+ Custom Node Configuration</button>
+            </div>
+
+            <div class="custom-node-fields" id="custom-node-fields" style="display: none;">
+              <div class="input-group">
+                <label for="input-custom-host">CUSTOM HOST / IP</label>
+                <input type="text" id="input-custom-host" class="delusional-input" placeholder="127.0.0.1">
+              </div>
+              <div class="input-group">
+                <label for="input-custom-port">PORT</label>
+                <input type="number" id="input-custom-port" class="delusional-input" value="51820">
+              </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 10px;">
+              <label for="transport-select">ENCAPSULATION & DPI CAMOUFLAGE</label>
+              <select id="transport-select" class="delusional-select">
+                <option value="udp">⚡ Encrypted UDP Datagram (Ultra Low-Latency Direct)</option>
+                <option value="stealth">🛡️ Stealth WebSocket Camouflage (Bypass DPI & Firewalls)</option>
+              </select>
+            </div>
           </div>
 
-          <div class="node-grid" id="node-grid">
-            <div class="node-card active" data-endpoint="127.0.0.1:51820">
-              <div class="node-flag">⚡</div>
-              <div class="node-info">
-                <span class="node-name">Local Core Node</span>
-                <span class="node-endpoint">127.0.0.1:51820</span>
+          <!-- SECURITY & LEAK PROTECTION -->
+          <div class="card glass-card">
+            <h3 class="card-title">SECURITY & LEAK PROTECTION</h3>
+            <div class="toggle-group">
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-title">🛑 Firewall Kill Switch</span>
+                  <span class="toggle-desc">Blocks outbound traffic if tunnel drops unexpectedly</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="chk-killswitch">
+                  <span class="slider"></span>
+                </label>
               </div>
-              <span class="node-ping-badge green">1.2 ms</span>
-            </div>
-            <div class="node-card" data-endpoint="tokyo.delusional.club:51820">
-              <div class="node-flag">🇯🇵</div>
-              <div class="node-info">
-                <span class="node-name">Tokyo Alpha-1</span>
-                <span class="node-endpoint">103.28.44.12:51820</span>
-              </div>
-              <span class="node-ping-badge green">18 ms</span>
-            </div>
-            <div class="node-card" data-endpoint="frankfurt.delusional.club:51820">
-              <div class="node-flag">🇩🇪</div>
-              <div class="node-info">
-                <span class="node-name">Frankfurt Vault-7</span>
-                <span class="node-endpoint">45.142.112.5:51820</span>
-              </div>
-              <span class="node-ping-badge amber">42 ms</span>
-            </div>
-            <div class="node-card" data-endpoint="singapore.delusional.club:51820">
-              <div class="node-flag">🇸🇬</div>
-              <div class="node-info">
-                <span class="node-name">Singapore Nexus-9</span>
-                <span class="node-endpoint">139.180.201.88:51820</span>
-              </div>
-              <span class="node-ping-badge green">28 ms</span>
-            </div>
-          </div>
 
-          <div class="custom-node-toggle">
-            <button class="btn-custom-toggle" id="btn-custom-toggle">+ Custom Node Configuration</button>
-          </div>
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-title">🛡️ DNS Leak Shield</span>
+                  <span class="toggle-desc">Forces Cloudflare 1.1.1.1 secure encrypted resolvers</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="chk-dns" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
 
-          <div class="custom-node-fields" id="custom-node-fields" style="display: none;">
-            <div class="input-group">
-              <label for="input-custom-host">CUSTOM HOST / IP</label>
-              <input type="text" id="input-custom-host" class="delusional-input" placeholder="127.0.0.1">
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-title">🌐 Windows System Proxy</span>
+                  <span class="toggle-desc">Auto-routes browser & OS traffic through ShinVPN gateway</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="chk-sysproxy" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
             </div>
-            <div class="input-group">
-              <label for="input-custom-port">PORT</label>
-              <input type="number" id="input-custom-port" class="delusional-input" value="51820">
-            </div>
-          </div>
-
-          <div class="input-group" style="margin-top: 10px;">
-            <label for="transport-select">ENCAPSULATION PROTOCOL</label>
-            <select id="transport-select" class="delusional-select">
-              <option value="udp">⚡ Encrypted UDP Datagram (Ultra Low-Latency Direct)</option>
-              <option value="stealth">🛡️ Stealth WebSocket Camouflage (Bypass DPI & Firewalls)</option>
-            </select>
           </div>
         </div>
 
-        <!-- SECURITY & SPLIT TUNNEL TOGGLES -->
-        <div class="card glass-card">
-          <h3 class="card-title">SECURITY & LEAK PROTECTION</h3>
-          <div class="toggle-group">
-            <div class="toggle-item">
+        <!-- TAB 2: DOUBLE VPN (MULTI-HOP) -->
+        <div class="tab-content" id="tab-multihop" style="display: none;">
+          <div class="card glass-card">
+            <h3 class="card-title">🔀 CASCADING DOUBLE VPN (ONION ROUTING)</h3>
+            <p class="tab-desc">Chains encryption across 2 separate servers. The entry relay never knows your destination; the exit gateway never knows your real IP.</p>
+
+            <div class="multihop-route-box">
+              <div class="hop-card">
+                <span class="hop-label">1. ENTRY RELAY (Hides your IP)</span>
+                <select id="sel-hop-entry" class="delusional-select">
+                  <option value="tokyo">🇯🇵 Tokyo Alpha-1 (103.28.44.12:51820)</option>
+                  <option value="singapore">🇸🇬 Singapore Nexus-9 (139.180.201.88:51820)</option>
+                  <option value="local">⚡ Local Core Node (127.0.0.1:51820)</option>
+                </select>
+              </div>
+              <div class="hop-arrow">⬇️ Double Encrypted Onion Layer</div>
+              <div class="hop-card">
+                <span class="hop-label">2. EXIT GATEWAY (Reaches Internet)</span>
+                <select id="sel-hop-exit" class="delusional-select">
+                  <option value="frankfurt">🇩🇪 Frankfurt Vault-7 (45.142.112.5:51820)</option>
+                  <option value="tokyo">🇯🇵 Tokyo Alpha-1 (103.28.44.12:51820)</option>
+                  <option value="singapore">🇸🇬 Singapore Nexus-9 (139.180.201.88:51820)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toggle-item" style="margin-top: 15px;">
               <div class="toggle-info">
-                <span class="toggle-title">🛑 Firewall Kill Switch</span>
-                <span class="toggle-desc">Blocks all outbound traffic if tunnel drops unexpectedly</span>
+                <span class="toggle-title">Enable Double VPN Onion Chaining</span>
+                <span class="toggle-desc">Applies dual ChaCha20-Poly1305 session envelopes</span>
               </div>
               <label class="switch">
-                <input type="checkbox" id="chk-killswitch">
+                <input type="checkbox" id="chk-multihop-enable">
                 <span class="slider"></span>
               </label>
             </div>
+          </div>
+        </div>
 
-            <div class="toggle-item">
-              <div class="toggle-info">
-                <span class="toggle-title">🛡️ DNS Leak Shield</span>
-                <span class="toggle-desc">Forces Cloudflare 1.1.1.1 secure encrypted resolvers</span>
-              </div>
-              <label class="switch">
-                <input type="checkbox" id="chk-dns" checked>
-                <span class="slider"></span>
-              </label>
+        <!-- TAB 3: PROCESS MATRIX (SPLIT TUNNELING) -->
+        <div class="tab-content" id="tab-splittunnel" style="display: none;">
+          <div class="card glass-card">
+            <div class="card-header-flex">
+              <h3 class="card-title">🎯 PROCESS ROUTING MATRIX</h3>
+              <button class="btn-copy-key" id="btn-refresh-procs">🔄 SCAN APPS</button>
+            </div>
+            <p class="tab-desc">Selectively tunnel specific apps through ShinVPN while letting gaming or streaming bypass directly.</p>
+
+            <div class="split-mode-group">
+              <label><input type="radio" name="split-mode" value="INCLUSIVE" checked> <b>Bypass Selected</b> (All apps use VPN except checked)</label>
+              <label><input type="radio" name="split-mode" value="EXCLUSIVE"> <b>Tunnel Selected Only</b> (Only checked apps use VPN)</label>
             </div>
 
-            <div class="toggle-item">
+            <div class="proc-list" id="proc-list-container">
+              <!-- Dynamically populated process items -->
+              <div class="proc-item-loading">Scanning running desktop applications...</div>
+            </div>
+
+            <button class="btn-speedtest" id="btn-save-split-rules" style="margin-top: 12px;">💾 APPLY PROCESS ROUTING RULES</button>
+          </div>
+        </div>
+
+        <!-- TAB 4: MOBILE QR CODE HUB -->
+        <div class="tab-content" id="tab-mobileqr" style="display: none;">
+          <div class="card glass-card">
+            <div class="card-header-flex">
+              <h3 class="card-title">📱 MOBILE PROFILES & QR CODE HUB</h3>
+              <button class="btn-copy-key" id="btn-add-profile">+ NEW DEVICE</button>
+            </div>
+            <p class="tab-desc">Scan QR code with your iPhone or Android WireGuard app for instant 1-click encrypted tunnel import.</p>
+
+            <div class="profile-grid" id="profile-grid-container">
+              <!-- Profiles loaded here -->
+            </div>
+
+            <!-- QR Modal Display -->
+            <div class="qr-display-box" id="qr-display-box" style="display: none;">
+              <h4 id="qr-device-title">iPhone Profile QR Code</h4>
+              <div class="qr-svg-wrapper" id="qr-svg-wrapper"></div>
+              <button class="btn-copy-key" id="btn-copy-wireguard-conf">📋 Copy WireGuard .conf Text</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: CYBERSHIELD ADBLOCKER -->
+        <div class="tab-content" id="tab-cybershield" style="display: none;">
+          <div class="card glass-card">
+            <div class="card-header-flex">
+              <h3 class="card-title">🛡️ DELUSIONAL CYBERSHIELD</h3>
+              <span class="node-count-badge green" id="cs-rules-count">50,000+ RULES LOADED</span>
+            </div>
+            <p class="tab-desc">In-memory DNS sinkhole automatically intercepts and drops ads, telemetry beacons, and cryptojackers at line speed.</p>
+
+            <div class="cs-stats-grid">
+              <div class="cs-stat-card">
+                <span class="cs-stat-val highlight-cyan" id="cs-stat-blocked">0</span>
+                <span class="cs-stat-label">Total Queries Dropped</span>
+              </div>
+              <div class="cs-stat-card">
+                <span class="cs-stat-val highlight-purple" id="cs-stat-recent">-</span>
+                <span class="cs-stat-label">Last Intercepted Domain</span>
+              </div>
+            </div>
+
+            <div class="toggle-item" style="margin-top: 15px;">
               <div class="toggle-info">
-                <span class="toggle-title">🌐 Windows System Proxy</span>
-                <span class="toggle-desc">Auto-routes browser & OS traffic through ShinVPN gateway</span>
+                <span class="toggle-title">Active Ad & Telemetry Sinkhole</span>
+                <span class="toggle-desc">Drop doubleclick, telemetry, and tracking beacons</span>
               </div>
               <label class="switch">
-                <input type="checkbox" id="chk-sysproxy" checked>
+                <input type="checkbox" id="chk-adblock-enable" checked>
                 <span class="slider"></span>
               </label>
             </div>
@@ -230,14 +370,6 @@
             <div class="crypto-meta-item">
               <span class="c-label">AEAD Cipher</span>
               <span class="c-val">ChaCha20-Poly1305</span>
-            </div>
-            <div class="crypto-meta-item">
-              <span class="c-label">Key Derivation</span>
-              <span class="c-val">HKDF-SHA256</span>
-            </div>
-            <div class="crypto-meta-item">
-              <span class="c-label">Replay Filter</span>
-              <span class="c-val">128-Bit Sliding Window</span>
             </div>
             <div class="crypto-meta-item">
               <span class="c-label">Assigned VIP</span>
@@ -277,6 +409,7 @@
     </footer>
   </div>
 
+  <script src="map.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

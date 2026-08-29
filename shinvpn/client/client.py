@@ -198,7 +198,9 @@ class ShinVPNClient:
             await self.proxy_tunnel.start()
 
             if self.config.enable_system_proxy:
-                WindowsSystemProxy.enable(f"socks=127.0.0.1:{self.config.local_proxy_port}")
+                WindowsSystemProxy.enable(
+                    f"http=127.0.0.1:{self.config.local_proxy_port};https=127.0.0.1:{self.config.local_proxy_port};socks=127.0.0.1:{self.config.local_proxy_port}"
+                )
 
             # 4. Engage KillSwitch & DNS Shield if enabled
             if self.config.enable_killswitch:

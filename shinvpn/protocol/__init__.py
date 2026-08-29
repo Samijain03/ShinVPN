@@ -18,6 +18,7 @@ from .constants import (
     MSG_PROXY_CLOSE,
     MSG_SPEEDTEST_REQ,
     MSG_SPEEDTEST_DATA,
+    MSG_MULTIHOP_FORWARD,
     DEFAULT_PORT_UDP,
     DEFAULT_PORT_STEALTH,
     DEFAULT_MTU,
@@ -40,6 +41,7 @@ from .frames import (
     ProxyCloseFrame,
     SpeedtestReqFrame,
     SpeedtestDataFrame,
+    MultiHopForwardFrame,
     parse_frame,
 )
 

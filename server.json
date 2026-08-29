@@ -17,6 +17,21 @@
       "name": "Dev Client",
       "public_key": "YN5XZop9yCpNqHgYJoQ5NVfqD7perd28fzgWiN+//Qs=",
       "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "Test Phone",
+      "public_key": "qSwbglTozx9fnelTIPasFJhCY0WKRrfQYEgCv5KJkDE=",
+      "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "iPhone-16",
+      "public_key": "Iqf3O+HUH3zOdvPAbTOWacYLKIYy4tYrfJDPrVlZQEw=",
+      "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "Test Phone",
+      "public_key": "8OI1BznSLBvNw8F1eKvJktWCYiHP5FNvCv5AX87CeHU=",
+      "allowed_ip": "10.8.0.2"
     }
   ]
 }

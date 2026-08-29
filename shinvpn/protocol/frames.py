@@ -26,6 +26,7 @@ from .constants import (
     MSG_PROXY_CLOSE,
     MSG_SPEEDTEST_REQ,
     MSG_SPEEDTEST_DATA,
+    MSG_MULTIHOP_FORWARD,
 )
 
 # Header format:
@@ -238,6 +239,36 @@ class SpeedtestDataFrame(ShinFrame):
         return self.payload[8:]
 
 
+class MultiHopForwardFrame(ShinFrame):
+    """
+    Onion Encapsulated Multi-Hop Frame.
+    Hop 1 peels outer layer and forwards inner_frame to target_endpoint (e.g. Hop 2).
+    Format: [1B HostLen] [Host] [2B Port] [Inner Encrypted Frame]
+    """
+    msg_type = MSG_MULTIHOP_FORWARD
+
+    def __init__(self, session_id: int = 0, seq_num: int = 0, next_host: str = "", next_port: int = 0, inner_frame_data: bytes = b"", payload: bytes = b""):
+        if not payload:
+            host_b = next_host.encode("utf-8")
+            payload = struct.pack("!B", len(host_b)) + host_b + struct.pack("!H", next_port) + inner_frame_data
+        super().__init__(session_id=session_id, seq_num=seq_num, payload=payload)
+
+    @property
+    def next_host(self) -> str:
+        hlen = self.payload[0]
+        return self.payload[1 : 1 + hlen].decode("utf-8", errors="replace")
+
+    @property
+    def next_port(self) -> int:
+        hlen = self.payload[0]
+        return struct.unpack("!H", self.payload[1 + hlen : 3 + hlen])[0]
+
+    @property
+    def inner_frame_data(self) -> bytes:
+        hlen = self.payload[0]
+        return self.payload[3 + hlen :]
+
+
 FRAME_TYPE_MAP = {
     MSG_HANDSHAKE_INIT: HandshakeInitFrame,
     MSG_HANDSHAKE_RESP: HandshakeRespFrame,
@@ -251,6 +282,7 @@ FRAME_TYPE_MAP = {
     MSG_PROXY_CLOSE: ProxyCloseFrame,
     MSG_SPEEDTEST_REQ: SpeedtestReqFrame,
     MSG_SPEEDTEST_DATA: SpeedtestDataFrame,
+    MSG_MULTIHOP_FORWARD: MultiHopForwardFrame,
 }
 
 

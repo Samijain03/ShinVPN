@@ -238,6 +238,69 @@ def run_cli_speedtest(
         pass
 
 
+@app.command("adblock")
+def run_adblock_stats(
+    test_domain: str = typer.Option("", "--test", "-t", help="Test whether a specific domain is blocked")
+):
+    """View Delusional CyberShield AdBlocker & Malware Sinkhole status."""
+    from ..tunnel.adblock import shield_instance
+    stats = shield_instance.get_stats()
+    table = Table(title="🛡️ DELUSIONAL CYBERSHIELD ADBLOCKER", border_style="cyan")
+    table.add_column("Property", style="dim")
+    table.add_column("Value", style="bold white")
+    table.add_row("Status", "[green]ACTIVE (DNS SINKHOLE)[/green]" if stats["enabled"] else "[red]DISABLED[/red]")
+    table.add_row("Loaded Rules", f"{stats['rules_loaded']:,} domains")
+    table.add_row("Total Blocked Queries", f"[cyan]{stats['blocked_queries_count']}[/cyan]")
+    table.add_row("Last Intercepted", stats['last_blocked_domain'] or "None")
+    console.print(table)
+
+    if test_domain:
+        blocked = shield_instance.should_block(test_domain)
+        if blocked:
+            console.print(f"[red]🚫 Domain '{test_domain}' is BLOCKED (CyberShield Sinkhole)[/red]")
+        else:
+            console.print(f"[green]✔ Domain '{test_domain}' is PERMITTED[/green]")
+
+
+@app.command("processes")
+def run_list_processes():
+    """Scan and list running desktop apps for split tunneling."""
+    from ..tunnel.process_router import process_matrix
+    apps = process_matrix.scan_active_applications()
+    table = Table(title="🎯 RUNNING APPLICATION MATRIX", border_style="purple")
+    table.add_column("Icon", style="dim")
+    table.add_column("Application Name", style="bold white")
+    table.add_column("Process Name", style="cyan")
+    table.add_column("Category", style="dim")
+    table.add_column("Routing Status", style="green")
+
+    for app in apps:
+        status = "[green]TUNNELED[/green]" if app["is_tunneled"] else "[dim]BYPASS[/dim]"
+        table.add_row(app["icon"], app["display_name"], app["process_name"], app["category"], status)
+    console.print(table)
+
+
+@app.command("profile-add")
+def run_add_profile(
+    name: str = typer.Argument(..., help="Name of device (e.g. iPhone-15)"),
+    device_type: str = typer.Option("phone", "--type", "-t", help="Device type: phone/laptop/desktop")
+):
+    """Provision a new multi-device profile."""
+    from ..crypto.profiles import profile_manager
+    prof = profile_manager.create_profile(name, device_type)
+    console.print(f"[green]✔ Device Profile '{prof.name}' created![/green]")
+    console.print(f"Allocated VIP: [cyan]{prof.allocated_vip}[/cyan]")
+    console.print(f"Public Key: [purple]{prof.public_key}[/purple]")
+
+
+@app.command("proxy-reset")
+def run_proxy_reset():
+    """Reset and disable Windows WinINet system proxy settings."""
+    from ..tunnel.proxy_tunnel import WindowsSystemProxy
+    WindowsSystemProxy.disable()
+    console.print("[green]✔ Windows System Proxy reset and disabled successfully.[/green]")
+
+
 @app.command("gui")
 def run_gui():
     """Launch the Cyberpunk Desktop GUI."""

@@ -1,10 +1,14 @@
 /*
-  ShinVPN Cyberpunk Frontend Logic & Holographic Audio-Visual Engine
-  Delusional Club Industries Telemetry & State Control
+  ShinVPN Cyberpunk Frontend Master Logic & Multi-Feature Hub
+  Delusional Club Industries Application Control System
 */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Elements
+  // Navigation Tabs
+  const navButtons = document.querySelectorAll(".nav-btn");
+  const tabContents = document.querySelectorAll(".tab-content");
+
+  // Core Connection Elements
   const btnToggle = document.getElementById("btn-toggle-connect");
   const btnText = document.getElementById("btn-text");
   const pulseRing = document.getElementById("pulse-ring");
@@ -13,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusDesc = document.getElementById("status-desc");
   const sessionTimer = document.getElementById("session-timer");
 
+  // Metric Displays
   const valDl = document.getElementById("val-dl");
   const valUl = document.getElementById("val-ul");
   const valPing = document.getElementById("val-ping");
@@ -29,12 +34,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const statDataOut = document.getElementById("stat-data-out");
   const statPackets = document.getElementById("stat-packets");
 
+  // Speedtest
   const btnSpeedtest = document.getElementById("btn-speedtest");
   const stText = document.getElementById("st-text");
   const stResults = document.getElementById("st-results");
   const resDl = document.getElementById("res-dl");
   const resUl = document.getElementById("res-ul");
 
+  // CyberShield AdBlocker
+  const badgeAdblock = document.getElementById("badge-adblock");
+  const valAdsBlocked = document.getElementById("val-ads-blocked");
+  const csStatBlocked = document.getElementById("cs-stat-blocked");
+  const csStatRecent = document.getElementById("cs-stat-recent");
+  const chkAdblockEnable = document.getElementById("chk-adblock-enable");
+
+  // Double VPN / Multi-Hop
+  const chkMultihopEnable = document.getElementById("chk-multihop-enable");
+  const selHopEntry = document.getElementById("sel-hop-entry");
+  const selHopExit = document.getElementById("sel-hop-exit");
+
+  // Split Tunnel Process Matrix
+  const procListContainer = document.getElementById("proc-list-container");
+  const btnRefreshProcs = document.getElementById("btn-refresh-procs");
+  const btnSaveSplitRules = document.getElementById("btn-save-split-rules");
+
+  // Mobile QR Hub
+  const profileGridContainer = document.getElementById("profile-grid-container");
+  const btnAddProfile = document.getElementById("btn-add-profile");
+  const qrDisplayBox = document.getElementById("qr-display-box");
+  const qrDeviceTitle = document.getElementById("qr-device-title");
+  const qrSvgWrapper = document.getElementById("qr-svg-wrapper");
+  const btnCopyWireguardConf = document.getElementById("btn-copy-wireguard-conf");
+  let currentActiveWireguardConf = "";
+
+  // Nodes & Transport
   const nodeCards = document.querySelectorAll(".node-card");
   const btnCustomToggle = document.getElementById("btn-custom-toggle");
   const customNodeFields = document.getElementById("custom-node-fields");
@@ -42,12 +75,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputCustomPort = document.getElementById("input-custom-port");
   const transportSelect = document.getElementById("transport-select");
 
+  // Toggles & Terminal
   const chkKillswitch = document.getElementById("chk-killswitch");
   const chkDns = document.getElementById("chk-dns");
   const chkSysproxy = document.getElementById("chk-sysproxy");
   const consoleBox = document.getElementById("console-box");
   const btnClearLogs = document.getElementById("btn-clear-logs");
 
+  // Audio Toggle
   const btnAudioToggle = document.getElementById("btn-audio-toggle");
   const audioIcon = document.getElementById("audio-icon");
   const audioStatus = document.getElementById("audio-status");
@@ -60,16 +95,42 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedEndpoint = "127.0.0.1:51820";
   let isCustomNode = false;
 
-  // 1. Web Audio Synth Effects
+  // 1. Initialize Holographic Radar Map
+  let radarMap = null;
+  if (window.CyberRadarMap) {
+    radarMap = new window.CyberRadarMap("radar-canvas");
+  }
+
+  // 2. Tab Navigation
+  navButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      playSynth("click");
+      const targetTab = btn.dataset.tab;
+      navButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      tabContents.forEach((content) => {
+        if (content.id === `tab-${targetTab}`) {
+          content.style.display = "block";
+        } else {
+          content.style.display = "none";
+        }
+      });
+
+      if (targetTab === "splittunnel") loadProcesses();
+      if (targetTab === "mobileqr") loadProfiles();
+      if (targetTab === "cybershield") fetchAdblockStats();
+    });
+  });
+
+  // 3. Web Audio Synthesizer
   let audioCtx = null;
   function getAudioContext() {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContext();
     }
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
-    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
     return audioCtx;
   }
 
@@ -84,7 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
       gain.connect(ctx.destination);
 
       if (type === "connect") {
-        // Upbeat cyberpunk chime (Arpeggio: 440 -> 660 -> 880 -> 1320 Hz)
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(440, now);
         osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
@@ -94,7 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
         osc.start(now);
         osc.stop(now + 0.5);
       } else if (type === "disconnect") {
-        // Descending low-pass filter sweep (880 -> 220 Hz)
         osc.type = "sine";
         osc.frequency.setValueAtTime(660, now);
         osc.frequency.exponentialRampToValueAtTime(180, now + 0.35);
@@ -103,7 +162,6 @@ document.addEventListener("DOMContentLoaded", () => {
         osc.start(now);
         osc.stop(now + 0.4);
       } else if (type === "speedtest") {
-        // Sonar Ping
         osc.type = "sine";
         osc.frequency.setValueAtTime(1200, now);
         osc.frequency.exponentialRampToValueAtTime(1800, now + 0.08);
@@ -130,39 +188,39 @@ document.addEventListener("DOMContentLoaded", () => {
     playSynth("click");
   });
 
-  // 2. Holographic Background Canvas Animation
-  const canvas = document.getElementById("bg-canvas");
-  const cctx = canvas.getContext("2d");
+  // 4. Background Canvas Particles
+  const bgCanvas = document.getElementById("bg-canvas");
+  const cctx = bgCanvas.getContext("2d");
   let particles = [];
 
   function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    bgCanvas.width = window.innerWidth;
+    bgCanvas.height = window.innerHeight;
   }
   window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 35; i++) {
     particles.push({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
       size: Math.random() * 2 + 1,
       color: Math.random() > 0.5 ? "rgba(157, 78, 221, " : "rgba(0, 245, 212, ",
-      alpha: Math.random() * 0.5 + 0.2,
+      alpha: Math.random() * 0.4 + 0.2,
     });
   }
 
   function drawBackground() {
-    cctx.clearRect(0, 0, canvas.width, canvas.height);
+    cctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
     for (let p of particles) {
       p.x += p.vx;
       p.y += p.vy;
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      if (p.y < 0) p.y = canvas.height;
-      if (p.y > canvas.height) p.y = 0;
+      if (p.x < 0) p.x = bgCanvas.width;
+      if (p.x > bgCanvas.width) p.x = 0;
+      if (p.y < 0) p.y = bgCanvas.height;
+      if (p.y > bgCanvas.height) p.y = 0;
 
       cctx.beginPath();
       cctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -173,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   drawBackground();
 
-  // 3. Initialize Chart.js Live Graph
+  // 5. Chart.js Throughput Graph
   const chartCanvas = document.getElementById("traffic-chart").getContext("2d");
   const chartLabels = Array(20).fill("");
   const dlData = Array(20).fill(0);
@@ -214,11 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
         legend: {
           display: true,
           position: "top",
-          labels: {
-            boxWidth: 10,
-            color: "#94a3b8",
-            font: { size: 9, family: "JetBrains Mono" },
-          },
+          labels: { boxWidth: 10, color: "#94a3b8", font: { size: 9, family: "JetBrains Mono" } },
         },
       },
       scales: {
@@ -226,10 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         y: {
           beginAtZero: true,
           grid: { color: "rgba(255, 255, 255, 0.04)" },
-          ticks: {
-            color: "#94a3b8",
-            font: { size: 9, family: "JetBrains Mono" },
-          },
+          ticks: { color: "#94a3b8", font: { size: 9, family: "JetBrains Mono" } },
         },
       },
     },
@@ -249,12 +300,11 @@ document.addEventListener("DOMContentLoaded", () => {
     logConsole("Console cleared.", "system");
   });
 
-  // 4. WebSocket Telemetry Connection
+  // 6. WebSocket Telemetry
   let ws = null;
   function connectWebSocket() {
     const loc = window.location;
     const wsUri = (loc.protocol === "https:" ? "wss://" : "ws://") + loc.host + "/ws/telemetry";
-
     ws = new WebSocket(wsUri);
 
     ws.onopen = () => {
@@ -270,7 +320,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     ws.onclose = () => {
-      logConsole("Lost connection to daemon. Retrying...", "warn");
       setTimeout(connectWebSocket, 2000);
     };
   }
@@ -279,10 +328,9 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch("/api/status");
       const data = await res.json();
-      if (data.client_key) {
-        dispClientKey.textContent = data.client_key;
-      }
+      if (data.client_key) dispClientKey.textContent = data.client_key;
       handleTelemetryUpdate(data);
+      fetchAdblockStats();
     } catch (e) {}
   }
 
@@ -321,11 +369,9 @@ document.addEventListener("DOMContentLoaded", () => {
       valDl.textContent = dlMbps;
       valUl.textContent = ulMbps;
 
-      // Update Mini Progress Bars (capped at 50 Mbps max visual width)
       barDl.style.width = Math.min(100, (parseFloat(dlMbps) / 50) * 100) + "%";
       barUl.style.width = Math.min(100, (parseFloat(ulMbps) / 50) * 100) + "%";
 
-      // Session stats
       statDataIn.textContent = formatBytes(data.bytes_rx);
       statDataOut.textContent = formatBytes(data.bytes_tx);
       statPackets.textContent = `${data.packets_tx || 0} / ${data.packets_rx || 0}`;
@@ -334,7 +380,6 @@ document.addEventListener("DOMContentLoaded", () => {
         dispRekey.textContent = Math.round(data.rekey_remaining_bytes / (1024 * 1024)) + " MB";
       }
 
-      // Update Chart
       dlData.shift();
       dlData.push(parseFloat(dlMbps));
       ulData.shift();
@@ -408,13 +453,16 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionTimer.textContent = "00:00:00";
   }
 
-  // 5. Node Selection
+  // 7. Node Selection & Radar Integration
   nodeCards.forEach((card) => {
     card.addEventListener("click", () => {
       playSynth("click");
       nodeCards.forEach((c) => c.classList.remove("active"));
       card.classList.add("active");
       selectedEndpoint = card.dataset.endpoint;
+      const nodeId = card.dataset.id || "local";
+      if (radarMap) radarMap.setActiveNode(nodeId);
+
       isCustomNode = false;
       customNodeFields.style.display = "none";
       logConsole(`Selected Node: ${card.querySelector(".node-name").textContent} (${selectedEndpoint})`, "info");
@@ -425,9 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
     playSynth("click");
     isCustomNode = !isCustomNode;
     customNodeFields.style.display = isCustomNode ? "block" : "none";
-    if (isCustomNode) {
-      nodeCards.forEach((c) => c.classList.remove("active"));
-    }
+    if (isCustomNode) nodeCards.forEach((c) => c.classList.remove("active"));
   });
 
   transportSelect.addEventListener("change", () => {
@@ -436,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
       transportSelect.value === "udp" ? "⚡ UDP HIGH-SPEED" : "🛡️ STEALTH WSS";
   });
 
-  // 6. Connect / Disconnect Action
+  // 8. Connect / Disconnect Action
   async function handleConnectToggle() {
     playSynth("click");
     if (isConnected) {
@@ -475,10 +521,6 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       logConsole(`Initiating ShinVPN tunnel to ${host}:${port} (${payload.transport_type.toUpperCase()})...`, "info");
-      if (host !== "127.0.0.1" && host !== "localhost") {
-        logConsole(`Note: Connecting to remote VPS node. For instant zero-setup local testing, select 'Local Core Node' (⚡).`, "system");
-      }
-
       try {
         const res = await fetch("/api/connect", {
           method: "POST",
@@ -504,12 +546,10 @@ document.addEventListener("DOMContentLoaded", () => {
     handleConnectToggle();
   });
 
-  const connectionHub = document.querySelector(".connection-hub");
-  if (connectionHub) {
-    connectionHub.addEventListener("click", handleConnectToggle);
-  }
+  const connectionHub = document.getElementById("conn-hub-trigger");
+  if (connectionHub) connectionHub.addEventListener("click", handleConnectToggle);
 
-  // 7. Speedtest Action
+  // 9. Speedtest Action
   btnSpeedtest.addEventListener("click", async () => {
     if (!isConnected) {
       logConsole("Connect to ShinVPN first before running speedtest.", "warn");
@@ -531,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resDl.textContent = data.download_mbps;
         resUl.textContent = data.upload_mbps;
         stResults.style.display = "flex";
-        logConsole(`✔ Benchmark Complete! Down: ${data.download_mbps} Mbps | Up: ${data.upload_mbps} Mbps | Latency: ${data.latency_ms} ms`, "info");
+        logConsole(`✔ Benchmark: Down: ${data.download_mbps} Mbps | Up: ${data.upload_mbps} Mbps | RTT: ${data.latency_ms} ms`, "info");
       } else {
         logConsole("Speedtest error: " + data.error, "error");
       }
@@ -544,7 +584,170 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 8. Copy Public Key Action
+  // 10. CyberShield AdBlocker Integration
+  async function fetchAdblockStats() {
+    try {
+      const res = await fetch("/api/adblock/stats");
+      const data = await res.json();
+      valAdsBlocked.textContent = data.blocked_queries_count;
+      csStatBlocked.textContent = data.blocked_queries_count;
+      if (data.last_blocked_domain) csStatRecent.textContent = data.last_blocked_domain;
+      chkAdblockEnable.checked = data.enabled;
+    } catch (e) {}
+  }
+
+  chkAdblockEnable.addEventListener("change", async () => {
+    playSynth("click");
+    try {
+      const res = await fetch("/api/adblock/toggle", { method: "POST" });
+      const data = await res.json();
+      logConsole(`CyberShield AdBlocker ${data.enabled ? "ACTIVATED" : "DISABLED"}`, "info");
+      fetchAdblockStats();
+    } catch (e) {}
+  });
+
+  // 11. Multi-Hop Double VPN
+  chkMultihopEnable.addEventListener("change", async () => {
+    playSynth("click");
+    const payload = {
+      enabled: chkMultihopEnable.checked,
+      entry_node_id: selHopEntry.value,
+      exit_node_id: selHopExit.value,
+    };
+    try {
+      await fetch("/api/multihop/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      logConsole(`Double VPN Onion Routing: ${payload.enabled ? "ENABLED (" + payload.entry_node_id.toUpperCase() + " -> " + payload.exit_node_id.toUpperCase() + ")" : "DISABLED"}`, "system");
+    } catch (e) {}
+  });
+
+  // 12. Split Tunnel Process Matrix
+  async function loadProcesses() {
+    try {
+      procListContainer.innerHTML = "<div class='proc-item-loading'>Scanning running desktop applications...</div>";
+      const res = await fetch("/api/processes");
+      const data = await res.json();
+      procListContainer.innerHTML = "";
+
+      data.applications.forEach((app) => {
+        const item = document.createElement("div");
+        item.className = "proc-item";
+        item.innerHTML = `
+          <div class="proc-info">
+            <span class="proc-icon">${app.icon}</span>
+            <b>${app.display_name}</b>
+            <span class="proc-cat">${app.category}</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" class="chk-proc-route" data-proc="${app.process_name}" ${app.is_tunneled ? "checked" : ""}>
+            <span class="slider"></span>
+          </label>
+        `;
+        procListContainer.appendChild(item);
+      });
+    } catch (e) {
+      procListContainer.innerHTML = "<div class='proc-item-loading'>Failed to scan processes.</div>";
+    }
+  }
+
+  btnRefreshProcs.addEventListener("click", () => {
+    playSynth("click");
+    loadProcesses();
+  });
+
+  btnSaveSplitRules.addEventListener("click", async () => {
+    playSynth("click");
+    const checkedProcs = [];
+    document.querySelectorAll(".chk-proc-route:checked").forEach((chk) => {
+      checkedProcs.push(chk.dataset.proc);
+    });
+    const mode = document.querySelector('input[name="split-mode"]:checked').value;
+    const payload = { enabled: true, mode: mode, selected_apps: checkedProcs };
+
+    try {
+      const res = await fetch("/api/processes/rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      logConsole(`✔ Split Tunnel Rules saved (${data.selected_count} apps in ${data.mode} mode)`, "info");
+    } catch (e) {}
+  });
+
+  // 13. Mobile QR Profiles Hub
+  async function loadProfiles() {
+    try {
+      const res = await fetch("/api/profiles");
+      const data = await res.json();
+      profileGridContainer.innerHTML = "";
+
+      data.profiles.forEach((prof) => {
+        const card = document.createElement("div");
+        card.className = "profile-card";
+        const icon = prof.device_type === "phone" ? "📱" : prof.device_type === "laptop" ? "💻" : "🖥️";
+        card.innerHTML = `
+          <div>
+            <span class="p-name">${icon} ${prof.name}</span>
+            <span class="p-vip">VIP: ${prof.allocated_vip}</span>
+          </div>
+          <button class="btn-copy-key btn-view-qr" data-id="${prof.id}" data-name="${prof.name}">VIEW QR</button>
+        `;
+        profileGridContainer.appendChild(card);
+      });
+
+      document.querySelectorAll(".btn-view-qr").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          playSynth("click");
+          const profId = btn.dataset.id;
+          const profName = btn.dataset.name;
+          const qrRes = await fetch(`/api/profiles/${profId}/qr`);
+          const qrData = await qrRes.json();
+
+          qrDeviceTitle.textContent = `${profName} — WireGuard QR Code`;
+          qrSvgWrapper.innerHTML = qrData.svg;
+          currentActiveWireguardConf = qrData.config;
+          qrDisplayBox.style.display = "flex";
+          logConsole(`Generated Mobile QR Import for ${profName}`, "info");
+        });
+      });
+    } catch (e) {}
+  }
+
+  btnAddProfile.addEventListener("click", async () => {
+    playSynth("click");
+    const name = prompt("Enter new device profile name (e.g. iPhone-15):", "iPhone-15");
+    if (!name) return;
+
+    try {
+      const res = await fetch("/api/profiles/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name, device_type: "phone" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        logConsole(`Provisioned device profile '${name}' with VIP ${data.profile.allocated_vip}`, "system");
+        loadProfiles();
+      }
+    } catch (e) {}
+  });
+
+  btnCopyWireguardConf.addEventListener("click", () => {
+    playSynth("click");
+    if (currentActiveWireguardConf) {
+      navigator.clipboard.writeText(currentActiveWireguardConf).then(() => {
+        const orig = btnCopyWireguardConf.textContent;
+        btnCopyWireguardConf.textContent = "✔ COPIED TO CLIPBOARD!";
+        setTimeout(() => { btnCopyWireguardConf.textContent = orig; }, 1500);
+      });
+    }
+  });
+
+  // 14. Copy Client Public Key
   btnCopyKey.addEventListener("click", () => {
     playSynth("click");
     const key = dispClientKey.textContent;
@@ -552,11 +755,11 @@ document.addEventListener("DOMContentLoaded", () => {
       navigator.clipboard.writeText(key).then(() => {
         const orig = btnCopyKey.textContent;
         btnCopyKey.textContent = "✔ COPIED!";
-        logConsole("Client public key copied to clipboard.", "info");
         setTimeout(() => { btnCopyKey.textContent = orig; }, 1500);
       });
     }
   });
 
   connectWebSocket();
+  setInterval(fetchAdblockStats, 3000);
 });

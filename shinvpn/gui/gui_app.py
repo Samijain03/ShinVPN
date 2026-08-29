@@ -222,6 +222,84 @@ async def api_nodes():
     }
 
 
+# 1. CyberShield Ad & Tracker DNS Sinkhole Endpoints
+@app.get("/api/adblock/stats")
+async def api_adblock_stats():
+    from ..tunnel.adblock import shield_instance
+    return shield_instance.get_stats()
+
+
+@app.post("/api/adblock/toggle")
+async def api_adblock_toggle():
+    from ..tunnel.adblock import shield_instance
+    shield_instance.enabled = not shield_instance.enabled
+    return shield_instance.get_stats()
+
+
+# 2. Process-Level Split Tunneling Endpoints
+@app.get("/api/processes")
+async def api_get_processes():
+    from ..tunnel.process_router import process_matrix
+    apps = process_matrix.scan_active_applications()
+    return {
+        "enabled": process_matrix.enabled,
+        "mode": process_matrix.mode,
+        "applications": apps,
+    }
+
+
+class SplitTunnelRequest(BaseModel):
+    enabled: bool
+    mode: str = "INCLUSIVE"
+    selected_apps: List[str] = []
+
+
+@app.post("/api/processes/rules")
+async def api_set_process_rules(req: SplitTunnelRequest):
+    from ..tunnel.process_router import process_matrix
+    process_matrix.set_rules(req.enabled, req.mode, req.selected_apps)
+    return {"success": True, "mode": process_matrix.mode, "selected_count": len(process_matrix.selected_apps)}
+
+
+# 3. Multi-Device Profile Hub & Mobile QR Codes
+@app.get("/api/profiles")
+async def api_get_profiles():
+    from ..crypto.profiles import profile_manager
+    return {"profiles": list(profile_manager.profiles.values())}
+
+
+class CreateProfileRequest(BaseModel):
+    name: str = "New Mobile Device"
+    device_type: str = "phone"
+
+
+@app.post("/api/profiles/generate")
+async def api_generate_profile(req: CreateProfileRequest):
+    from ..crypto.profiles import profile_manager
+    prof = profile_manager.create_profile(req.name, req.device_type)
+    return {"success": True, "profile": prof}
+
+
+@app.get("/api/profiles/{profile_id}/qr")
+async def api_get_profile_qr(profile_id: str):
+    from ..crypto.profiles import profile_manager
+    conf = profile_manager.generate_wireguard_conf(profile_id, "127.0.0.1:51820")
+    svg_qr = profile_manager.generate_svg_qr(conf)
+    return {"success": True, "svg": svg_qr, "config": conf}
+
+
+# 4. Multi-Hop / Double VPN Config
+class MultiHopConfigRequest(BaseModel):
+    enabled: bool = False
+    entry_node_id: str = "tokyo"
+    exit_node_id: str = "frankfurt"
+
+
+@app.post("/api/multihop/config")
+async def api_set_multihop(req: MultiHopConfigRequest):
+    return {"success": True, "multihop_enabled": req.enabled, "entry": req.entry_node_id, "exit": req.exit_node_id}
+
+
 @app.websocket("/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
     await websocket.accept()

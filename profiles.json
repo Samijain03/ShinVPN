@@ -1,0 +1,11 @@
+{
+  "dev_1787633407_1": {
+    "id": "dev_1787633407_1",
+    "name": "iPhone-16",
+    "device_type": "phone",
+    "private_key": "EDHfBI3mZvP4yQm+CefPCtGfozgIYhlmdAFu+FI/fmU=",
+    "public_key": "Iqf3O+HUH3zOdvPAbTOWacYLKIYy4tYrfJDPrVlZQEw=",
+    "allocated_vip": "10.8.0.2",
+    "created_at": 1787633407.9404466
+  }
+}

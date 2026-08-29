@@ -70,6 +70,8 @@ class ClientSession:
     send_cb: Optional[Callable[[bytes], asyncio.Future]] = None
     # For user-space proxy routing: conn_id -> (reader, writer)
     proxy_streams: Dict[int, Tuple[asyncio.StreamReader, asyncio.StreamWriter]] = field(default_factory=dict)
+    proxy_pending_buffers: Dict[int, bytearray] = field(default_factory=dict)
+    proxy_connecting: Set[int] = field(default_factory=set)
 
 
 class ShinVPNServer:
@@ -299,7 +301,9 @@ class ShinVPNServer:
         if frame.msg_type == MSG_PROXY_CONNECT:
             # Format: conn_id (4B), port (2B), host_len (2B), host_bytes
             conn_id, port, host_len = struct.unpack("!IHH", decrypted_payload[:8])
-            host = decrypted_payload[8:8+host_len].decode("utf-8")
+            host = decrypted_payload[8:8+host_len].decode("utf-8", errors="replace")
+            session.proxy_connecting.add(conn_id)
+            session.proxy_pending_buffers[conn_id] = bytearray()
             asyncio.create_task(self._open_remote_proxy_connection(session, conn_id, host, port))
 
         elif frame.msg_type == MSG_PROXY_DATA:
@@ -310,14 +314,26 @@ class ShinVPNServer:
                 writer = stream_pair[1]
                 if not writer.is_closing():
                     writer.write(data)
-                    await writer.drain()
+                    try:
+                        await writer.drain()
+                    except Exception:
+                        pass
+            elif conn_id in session.proxy_connecting:
+                # Buffer data while connection is still establishing!
+                if conn_id in session.proxy_pending_buffers:
+                    session.proxy_pending_buffers[conn_id].extend(data)
 
         elif frame.msg_type == MSG_PROXY_CLOSE:
             conn_id = struct.unpack("!I", decrypted_payload[:4])[0]
+            session.proxy_connecting.discard(conn_id)
+            session.proxy_pending_buffers.pop(conn_id, None)
             stream_pair = session.proxy_streams.pop(conn_id, None)
             if stream_pair:
                 writer = stream_pair[1]
-                writer.close()
+                try:
+                    writer.close()
+                except Exception:
+                    pass
 
     async def _open_remote_proxy_connection(
         self, session: ClientSession, conn_id: int, host: str, port: int
@@ -328,10 +344,19 @@ class ShinVPNServer:
                 asyncio.open_connection(host, port), timeout=10.0
             )
             session.proxy_streams[conn_id] = (reader, writer)
+            session.proxy_connecting.discard(conn_id)
+
+            # Flush any data that arrived while connecting (e.g. TLS ClientHello)
+            buffered = session.proxy_pending_buffers.pop(conn_id, None)
+            if buffered:
+                writer.write(buffered)
+                await writer.drain()
+
             logger.debug(f"[Session {session.session_id} - Conn #{conn_id}] Connected to {host}:{port}")
 
+            # Stream response back in MTU-safe chunks
             while self.is_running and conn_id in session.proxy_streams:
-                data = await reader.read(4096)
+                data = await reader.read(1280)
                 if not data:
                     break
                 # Encrypt data frame to client
@@ -343,12 +368,23 @@ class ShinVPNServer:
         except Exception as e:
             logger.debug(f"[Conn #{conn_id}] Remote proxy connection closed: {e}")
         finally:
-            session.proxy_streams.pop(conn_id, None)
+            session.proxy_connecting.discard(conn_id)
+            session.proxy_pending_buffers.pop(conn_id, None)
+            stream_pair = session.proxy_streams.pop(conn_id, None)
+            if stream_pair:
+                try:
+                    stream_pair[1].close()
+                except Exception:
+                    pass
+
             # Notify client to close connection
-            seq, ciphertext = session.tx_cipher.encrypt(struct.pack("!I", conn_id))
-            c_frame = ShinFrame(session_id=session.session_id, seq_num=seq, payload=ciphertext)
-            c_frame.msg_type = MSG_PROXY_CLOSE
-            await self._send_to_client(session, c_frame.to_bytes())
+            try:
+                seq, ciphertext = session.tx_cipher.encrypt(struct.pack("!I", conn_id))
+                c_frame = ShinFrame(session_id=session.session_id, seq_num=seq, payload=ciphertext)
+                c_frame.msg_type = MSG_PROXY_CLOSE
+                await self._send_to_client(session, c_frame.to_bytes())
+            except Exception:
+                pass
 
     async def _send_to_client(self, session: ClientSession, raw_data: bytes) -> None:
         session.bytes_tx += len(raw_data)
