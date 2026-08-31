@@ -760,6 +760,66 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // 15. Quick Preset Bar Controls
+  const presetButtons = document.querySelectorAll(".btn-preset");
+  presetButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      playSynth("click");
+      const presetKey = btn.dataset.preset;
+      presetButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      try {
+        const res = await fetch(`/api/presets/${presetKey}`, { method: "POST" });
+        const data = await res.json();
+        if (data.success) {
+          logConsole(`⚡ Activated Preset: ${presetKey} (${data.mode} mode - ${data.apps.length} apps)`, "system");
+        }
+      } catch (e) {}
+    });
+  });
+
+  // 16. Double VPN Optimal Path Calculation
+  const btnAutoHop = document.getElementById("btn-auto-hop");
+  if (btnAutoHop) {
+    btnAutoHop.addEventListener("click", async () => {
+      playSynth("speedtest");
+      logConsole("🔍 Running Dijkstra live latency pathfinding across global nodes...", "system");
+      try {
+        const res = await fetch("/api/multihop/optimal");
+        const data = await res.json();
+        if (data.success) {
+          selHopEntry.value = data.entry.id;
+          selHopExit.value = data.exit.id;
+          chkMultihopEnable.checked = true;
+          logConsole(`✔ Optimal Route Found: ${data.entry.id.toUpperCase()} (${data.entry.rtt}ms) ➔ ${data.exit.id.toUpperCase()} (${data.exit.rtt}ms) | Total RTT: ${data.combined_rtt}ms`, "info");
+        }
+      } catch (e) {}
+    });
+  }
+
+  // 17. CyberShield Whitelist
+  const btnAddWhitelist = document.getElementById("btn-add-whitelist");
+  const inputWhitelist = document.getElementById("input-whitelist");
+  if (btnAddWhitelist && inputWhitelist) {
+    btnAddWhitelist.addEventListener("click", async () => {
+      playSynth("click");
+      const domain = inputWhitelist.value.trim();
+      if (!domain) return;
+      try {
+        const res = await fetch("/api/adblock/whitelist/add", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: domain }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          logConsole(`✔ Whitelisted '${domain}' (Total whitelisted: ${data.whitelist_count})`, "info");
+          inputWhitelist.value = "";
+        }
+      } catch (e) {}
+    });
+  }
+
   connectWebSocket();
   setInterval(fetchAdblockStats, 3000);
 });

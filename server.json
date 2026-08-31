@@ -42,6 +42,26 @@
       "name": "Test Phone",
       "public_key": "7uZIKfaj4jNoSr+yJ4qQtK4VtRkQtOa8n51iu7fZeFs=",
       "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "Test Phone",
+      "public_key": "1dK/kqdNm7bCXXove4GD6I5i1ERldL74Jo0F/Svh9Vs=",
+      "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "iPad Pro",
+      "public_key": "dOI220cZUrOshDEas7L+kpYmwkAsTSdaIVIZsRUKOxI=",
+      "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "Test Phone",
+      "public_key": "uwBu7WXXbxl1zn5pwm3QcOjZOxUj312oBX4gt+qXQEI=",
+      "allowed_ip": "10.8.0.2"
+    },
+    {
+      "name": "iPad Pro",
+      "public_key": "a8N7/SvUxKJfdkjUIvVSvqCaYWuZVnpKOZtiJ3kTMUU=",
+      "allowed_ip": "10.8.0.2"
     }
   ]
 }

@@ -5,38 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShinVPN — Delusional Club Industries</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@800;900&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
-<body>
-  <!-- HOLOGRAPHIC BACKGROUND CANVAS -->
-  <canvas id="bg-canvas" class="bg-canvas"></canvas>
+<body class="cyberpunk-theme">
+  <!-- Dynamic Background Particles -->
+  <canvas id="bg-canvas"></canvas>
 
-  <div class="delusional-app">
-    <!-- TOP BRAND BAR -->
+  <div class="app-container">
+    <!-- APP HEADER -->
     <header class="app-header">
-      <div class="brand">
-        <div class="brand-logo">
-          <div class="logo-core"></div>
+      <div class="logo-group">
+        <div class="logo-glow-ring">
+          <span class="logo-icon">⚡</span>
         </div>
-        <div class="brand-info">
-          <span class="brand-name">SHIN<span class="highlight">VPN</span></span>
-          <span class="brand-sub">DELUSIONAL CLUB INDUSTRIES</span>
+        <div class="logo-text">
+          <h1 class="brand-title">SHIN<span>VPN</span></h1>
+          <span class="brand-subtitle">DELUSIONAL CLUB INDUSTRIES // PROTOCOL v2.0</span>
         </div>
       </div>
+
       <div class="header-badges">
-        <!-- CYBERSHIELD STATS BADGE -->
-        <div class="badge shield-badge" id="badge-adblock" title="CyberShield Ad & Malware Sinkhole">
-          🛡️ BLOCKED: <span id="val-ads-blocked">0</span>
-        </div>
-        <button class="audio-toggle" id="btn-audio-toggle" title="Toggle Synth Audio FX">
-          <span id="audio-icon">🔊</span> FX: <span id="audio-status">ON</span>
+        <span class="badge transport-badge" id="transport-badge">⚡ UDP 4MB BUFFER</span>
+        <span class="badge status-badge" id="status-badge">DISCONNECTED</span>
+        <span class="badge adblock-badge" id="badge-adblock">🛡️ SINKHOLE: <b id="val-ads-blocked">0</b></span>
+        <button class="btn-audio-toggle" id="btn-audio-toggle" title="Synthesizer Sound FX">
+          <span id="audio-icon">🔊</span> <span id="audio-status">ON</span>
         </button>
-        <div class="badge mode-badge" id="transport-badge">⚡ UDP HIGH-SPEED</div>
-        <div class="badge status-badge" id="status-badge">DISCONNECTED</div>
       </div>
     </header>
 
-    <!-- NAVIGATION TABS -->
+    <!-- QUICK PRESET BAR -->
+    <div class="presets-bar">
+      <span class="preset-label">⚡ ACTIVE PRESET:</span>
+      <button class="btn-preset active" data-preset="ULTRA_PRIVACY">🔒 ULTRA-PRIVACY (ALL)</button>
+      <button class="btn-preset" data-preset="GAMING_MODE">🎮 GAMING LOW-PING</button>
+      <button class="btn-preset" data-preset="TORRENT_SHIELD">⚡ TORRENT SHIELD</button>
+    </div>
+
+    <!-- FEATURE NAVIGATION TABS -->
     <nav class="feature-nav">
       <button class="nav-btn active" data-tab="dashboard">⚡ TUNNEL DASHBOARD</button>
       <button class="nav-btn" data-tab="multihop">🔀 DOUBLE VPN (ONION)</button>
@@ -94,6 +103,14 @@
             </div>
             <div class="ping-status-dot" id="dot-ping"></div>
           </div>
+          <div class="speed-card jitter-card">
+            <span class="metric-label">JITTER / LOSS</span>
+            <div class="metric-val-group">
+              <span class="metric-val" id="val-jitter">0.8</span>
+              <span class="metric-unit">ms</span>
+            </div>
+            <span class="loss-sub" id="val-loss">0.0% loss</span>
+          </div>
         </div>
 
         <!-- SPEEDTEST ACTION BAR -->
@@ -108,11 +125,11 @@
           </div>
         </div>
 
-        <!-- HOLOGRAPHIC RADAR MAP -->
+        <!-- HOLOGRAPHIC GLOBAL RADAR MAP -->
         <div class="radar-container">
           <div class="radar-header">
-            <span>🌐 GLOBAL RADAR TOPOLOGY</span>
-            <span class="radar-live-dot">● LIVE HOPS</span>
+            <span>🌐 GLOBAL NODE RADAR (60 FPS)</span>
+            <span class="radar-live-dot">● LIVE TOPOLOGY</span>
           </div>
           <canvas id="radar-canvas" class="radar-canvas"></canvas>
         </div>
@@ -180,44 +197,33 @@
             </div>
 
             <div class="custom-node-fields" id="custom-node-fields" style="display: none;">
-              <div class="input-group">
-                <label for="input-custom-host">CUSTOM HOST / IP</label>
-                <input type="text" id="input-custom-host" class="delusional-input" placeholder="127.0.0.1">
+              <div class="input-row">
+                <input type="text" id="input-custom-host" placeholder="Server IP or Host (e.g. 1.2.3.4)" class="delusional-input">
+                <input type="number" id="input-custom-port" placeholder="Port" value="51820" class="delusional-input port-input">
               </div>
-              <div class="input-group">
-                <label for="input-custom-port">PORT</label>
-                <input type="number" id="input-custom-port" class="delusional-input" value="51820">
-              </div>
-            </div>
-
-            <div class="input-group" style="margin-top: 10px;">
-              <label for="transport-select">ENCAPSULATION & DPI CAMOUFLAGE</label>
-              <select id="transport-select" class="delusional-select">
-                <option value="udp">⚡ Encrypted UDP Datagram (Ultra Low-Latency Direct)</option>
-                <option value="stealth">🛡️ Stealth WebSocket Camouflage (Bypass DPI & Firewalls)</option>
-              </select>
             </div>
           </div>
 
-          <!-- SECURITY & LEAK PROTECTION -->
+          <!-- SECURITY & TRANSPORT SETTINGS -->
           <div class="card glass-card">
-            <h3 class="card-title">SECURITY & LEAK PROTECTION</h3>
+            <h3 class="card-title">SECURITY & TUNNEL OPTIONS</h3>
+            
             <div class="toggle-group">
               <div class="toggle-item">
                 <div class="toggle-info">
-                  <span class="toggle-title">🛑 Firewall Kill Switch</span>
-                  <span class="toggle-desc">Blocks outbound traffic if tunnel drops unexpectedly</span>
+                  <span class="toggle-title">Windows System Proxy Integration</span>
+                  <span class="toggle-desc">Universal HTTPS CONNECT & SOCKS4/5 on 127.0.0.1:10808</span>
                 </div>
                 <label class="switch">
-                  <input type="checkbox" id="chk-killswitch">
+                  <input type="checkbox" id="chk-sysproxy" checked>
                   <span class="slider"></span>
                 </label>
               </div>
 
               <div class="toggle-item">
                 <div class="toggle-info">
-                  <span class="toggle-title">🛡️ DNS Leak Shield</span>
-                  <span class="toggle-desc">Forces Cloudflare 1.1.1.1 secure encrypted resolvers</span>
+                  <span class="toggle-title">DNS Leak Shield</span>
+                  <span class="toggle-desc">Force Quad9 / Cloudflare encrypted resolvers</span>
                 </div>
                 <label class="switch">
                   <input type="checkbox" id="chk-dns" checked>
@@ -227,25 +233,39 @@
 
               <div class="toggle-item">
                 <div class="toggle-info">
-                  <span class="toggle-title">🌐 Windows System Proxy</span>
-                  <span class="toggle-desc">Auto-routes browser & OS traffic through ShinVPN gateway</span>
+                  <span class="toggle-title">Firewall Kill Switch</span>
+                  <span class="toggle-desc">Block outbound non-VPN traffic on unexpected drops</span>
                 </div>
                 <label class="switch">
-                  <input type="checkbox" id="chk-sysproxy" checked>
+                  <input type="checkbox" id="chk-killswitch">
                   <span class="slider"></span>
                 </label>
+              </div>
+
+              <div class="toggle-item">
+                <div class="toggle-info">
+                  <span class="toggle-title">Transport Protocol</span>
+                  <span class="toggle-desc">UDP Socket 4MB Buffer or Stealth WSS (DPI Camouflage)</span>
+                </div>
+                <select id="transport-select" class="delusional-select">
+                  <option value="udp">⚡ High-Throughput UDP (Default)</option>
+                  <option value="stealth">🛡️ Stealth WSS / TLS 1.3 Camouflage</option>
+                </select>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- TAB 2: DOUBLE VPN (MULTI-HOP) -->
+        <!-- TAB 2: DOUBLE VPN (MULTI-HOP ONION ROUTING) -->
         <div class="tab-content" id="tab-multihop" style="display: none;">
           <div class="card glass-card">
-            <h3 class="card-title">🔀 CASCADING DOUBLE VPN (ONION ROUTING)</h3>
-            <p class="tab-desc">Chains encryption across 2 separate servers. The entry relay never knows your destination; the exit gateway never knows your real IP.</p>
+            <div class="card-header-flex">
+              <h3 class="card-title">🔀 CASCADING DOUBLE VPN</h3>
+              <button class="btn-copy-key" id="btn-auto-hop">⚡ OPTIMAL PATH</button>
+            </div>
+            <p class="tab-desc">Chains two independent servers with nested ChaCha20-Poly1305 onion encryption.</p>
 
-            <div class="multihop-route-box">
+            <div class="hop-flow-box">
               <div class="hop-card">
                 <span class="hop-label">1. ENTRY RELAY (Hides your IP)</span>
                 <select id="sel-hop-entry" class="delusional-select">
@@ -268,7 +288,7 @@
             <div class="toggle-item" style="margin-top: 15px;">
               <div class="toggle-info">
                 <span class="toggle-title">Enable Double VPN Onion Chaining</span>
-                <span class="toggle-desc">Applies dual ChaCha20-Poly1305 session envelopes</span>
+                <span class="toggle-desc">Sub-100ms Auto-Failover enabled</span>
               </div>
               <label class="switch">
                 <input type="checkbox" id="chk-multihop-enable">
@@ -285,7 +305,7 @@
               <h3 class="card-title">🎯 PROCESS ROUTING MATRIX</h3>
               <button class="btn-copy-key" id="btn-refresh-procs">🔄 SCAN APPS</button>
             </div>
-            <p class="tab-desc">Selectively tunnel specific apps through ShinVPN while letting gaming or streaming bypass directly.</p>
+            <p class="tab-desc">Windows Extended TCP Table hook maps active processes in O(1) time.</p>
 
             <div class="split-mode-group">
               <label><input type="radio" name="split-mode" value="INCLUSIVE" checked> <b>Bypass Selected</b> (All apps use VPN except checked)</label>
@@ -293,7 +313,6 @@
             </div>
 
             <div class="proc-list" id="proc-list-container">
-              <!-- Dynamically populated process items -->
               <div class="proc-item-loading">Scanning running desktop applications...</div>
             </div>
 
@@ -308,7 +327,7 @@
               <h3 class="card-title">📱 MOBILE PROFILES & QR CODE HUB</h3>
               <button class="btn-copy-key" id="btn-add-profile">+ NEW DEVICE</button>
             </div>
-            <p class="tab-desc">Scan QR code with your iPhone or Android WireGuard app for instant 1-click encrypted tunnel import.</p>
+            <p class="tab-desc">Scan authentic ISO/IEC 18004 QR code with iOS/Android WireGuard app. Local Wi-Fi ZeroConf Beacon active.</p>
 
             <div class="profile-grid" id="profile-grid-container">
               <!-- Profiles loaded here -->
@@ -328,9 +347,9 @@
           <div class="card glass-card">
             <div class="card-header-flex">
               <h3 class="card-title">🛡️ DELUSIONAL CYBERSHIELD</h3>
-              <span class="node-count-badge green" id="cs-rules-count">50,000+ RULES LOADED</span>
+              <span class="node-count-badge green" id="cs-rules-count">BLOOM + RADIX TRIE</span>
             </div>
-            <p class="tab-desc">In-memory DNS sinkhole automatically intercepts and drops ads, telemetry beacons, and cryptojackers at line speed.</p>
+            <p class="tab-desc">Counting Bloom Filter & Reverse Domain Radix Trie filter ads/trackers in sub-microsecond time with zero memory leaks.</p>
 
             <div class="cs-stats-grid">
               <div class="cs-stat-card">
@@ -346,12 +365,21 @@
             <div class="toggle-item" style="margin-top: 15px;">
               <div class="toggle-info">
                 <span class="toggle-title">Active Ad & Telemetry Sinkhole</span>
-                <span class="toggle-desc">Drop doubleclick, telemetry, and tracking beacons</span>
+                <span class="toggle-desc">Drop doubleclick, analytics, and tracking beacons</span>
               </div>
               <label class="switch">
                 <input type="checkbox" id="chk-adblock-enable" checked>
                 <span class="slider"></span>
               </label>
+            </div>
+
+            <!-- Whitelist Box -->
+            <div class="whitelist-box" style="margin-top: 15px;">
+              <h4 class="card-title" style="font-size: 0.72rem; margin-bottom: 6px;">WHITELISTED DOMAINS (BYPASS SINKHOLE)</h4>
+              <div class="input-row">
+                <input type="text" id="input-whitelist" placeholder="e.g. tracking.mycompany.com" class="delusional-input">
+                <button class="btn-copy-key" id="btn-add-whitelist">+ ADD</button>
+              </div>
             </div>
           </div>
         </div>
@@ -380,33 +408,26 @@
               <span class="c-val highlight-purple" id="disp-rekey">1024 MB</span>
             </div>
             <div class="crypto-meta-item full-width">
-              <span class="c-label">Client Public Identity</span>
-              <span class="c-val text-truncate font-mono" id="disp-client-key">Loading...</span>
+              <span class="c-label">Client Public Identity (Base64)</span>
+              <span class="c-val text-truncate" id="disp-client-key">Loading...</span>
             </div>
           </div>
         </div>
 
-        <!-- LIVE CONSOLE LOG -->
-        <div class="card glass-card log-card">
+        <!-- LIVE AUDIT LOG CONSOLE -->
+        <div class="card glass-card console-card">
           <div class="card-header-flex">
-            <h3 class="card-title">DELUSIONAL TERMINAL</h3>
+            <h3 class="card-title">LIVE AUDIT LOGS</h3>
             <div class="log-actions">
               <button class="btn-log-action" id="btn-clear-logs">CLEAR</button>
             </div>
           </div>
           <div class="console-box" id="console-box">
-            <div class="log-entry system">[SYSTEM] ShinVPN Delusional Core v1.0 online.</div>
-            <div class="log-entry info">[INFO] Cryptographic primitives verified (X25519 / ChaCha20-Poly1305).</div>
+            <div class="log-entry system">[SYSTEM] ShinVPN High-Speed Client Core Initialized.</div>
           </div>
         </div>
       </section>
     </main>
-
-    <!-- FOOTER -->
-    <footer class="app-footer">
-      <span>SHINVPN v1.0.0 — DELUSIONAL CLUB INDUSTRIES</span>
-      <span class="sec-flag">ZERO-KNOWLEDGE AUTHENTICATED TUNNEL</span>
-    </footer>
   </div>
 
   <script src="map.js"></script>

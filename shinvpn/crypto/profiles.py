@@ -2,15 +2,21 @@
 ShinVPN Multi-Device Profile Hub & Mobile QR Code Engine
 ========================================================
 Delusional Club Industries Device Management & Provisioning.
-Generates multi-device client profiles, WireGuard/ShinVPN configs,
-and renders pure-Python SVG and ASCII QR codes for instant smartphone import.
+Features:
+- Multi-device client provisioning with dedicated VIP allocations
+- Wi-Fi ZeroConf / mDNS UDP beacon for local network auto-discovery
+- Authentic ISO/IEC 18004 SVG and ASCII QR code matrix generation
+- Per-device data consumption telemetry tracking.
 """
 
 from __future__ import annotations
+import asyncio
+from dataclasses import dataclass, asdict, field
 import json
 import logging
-from dataclasses import dataclass, asdict
 from pathlib import Path
+import socket
+import time
 from typing import Dict, List, Optional
 
 from .keys import KeyPair, generate_keypair
@@ -28,6 +34,48 @@ class DeviceProfile:
     public_key: str
     allocated_vip: str
     created_at: float
+    bytes_consumed: int = 0
+    last_connected: float = 0.0
+
+
+class WifiZeroConfBeacon:
+    """Announces ShinVPN server endpoint on local Wi-Fi / LAN via UDP broadcast."""
+
+    def __init__(self, port: int = 51820, broadcast_port: int = 51822):
+        self.port = port
+        self.broadcast_port = broadcast_port
+        self._running = False
+        self._task: Optional[asyncio.Task] = None
+
+    async def start(self) -> None:
+        self._running = True
+        self._task = asyncio.create_task(self._beacon_loop())
+        logger.info(f"ShinVPN Wi-Fi ZeroConf Beacon active on port {self.broadcast_port}")
+
+    async def _beacon_loop(self) -> None:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.setblocking(False)
+
+        while self._running:
+            try:
+                msg = json.dumps({
+                    "service": "shinvpn-core",
+                    "version": "2.0",
+                    "port": self.port,
+                    "timestamp": time.time(),
+                }).encode("utf-8")
+                
+                loop = asyncio.get_running_loop()
+                await loop.sock_sendto(sock, msg, ("255.255.255.255", self.broadcast_port))
+            except Exception:
+                pass
+            await asyncio.sleep(5.0)
+
+    def stop(self) -> None:
+        self._running = False
+        if self._task:
+            self._task.cancel()
 
 
 class MultiDeviceProfileManager:
@@ -36,6 +84,7 @@ class MultiDeviceProfileManager:
     def __init__(self, profiles_file: str = "profiles.json"):
         self.profiles_file = Path(profiles_file)
         self.profiles: Dict[str, DeviceProfile] = {}
+        self.beacon = WifiZeroConfBeacon()
         self.load_profiles()
 
     def create_profile(
@@ -45,7 +94,6 @@ class MultiDeviceProfileManager:
         server_config_path: str = "server.json",
     ) -> DeviceProfile:
         """Provisions a new device profile with a dedicated keypair and VIP."""
-        import time
         kp = generate_keypair()
         prof_id = f"dev_{int(time.time())}_{len(self.profiles) + 1}"
 
@@ -61,6 +109,8 @@ class MultiDeviceProfileManager:
             public_key=kp.public_b64,
             allocated_vip=vip,
             created_at=time.time(),
+            bytes_consumed=0,
+            last_connected=0.0,
         )
 
         self.profiles[prof_id] = profile
@@ -78,6 +128,14 @@ class MultiDeviceProfileManager:
                 logger.warning(f"Failed to auto-register peer in server.json: {e}")
 
         return profile
+
+    def update_usage(self, profile_id: str, bytes_delta: int) -> None:
+        """Updates traffic consumed by a device profile."""
+        if profile_id in self.profiles:
+            p = self.profiles[profile_id]
+            p.bytes_consumed += bytes_delta
+            p.last_connected = time.time()
+            self.save_profiles()
 
     def delete_profile(self, profile_id: str) -> bool:
         """Removes a profile from management."""

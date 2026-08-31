@@ -303,7 +303,7 @@ async def api_get_profile_qr(profile_id: str, host: Optional[str] = None):
     return {"success": True, "svg": svg_qr, "config": conf, "endpoint": endpoint}
 
 
-# 4. Multi-Hop / Double VPN Config
+# 4. Multi-Hop / Double VPN Config & Optimal Path
 class MultiHopConfigRequest(BaseModel):
     enabled: bool = False
     entry_node_id: str = "tokyo"
@@ -313,6 +313,46 @@ class MultiHopConfigRequest(BaseModel):
 @app.post("/api/multihop/config")
 async def api_set_multihop(req: MultiHopConfigRequest):
     return {"success": True, "multihop_enabled": req.enabled, "entry": req.entry_node_id, "exit": req.exit_node_id}
+
+
+@app.get("/api/multihop/optimal")
+async def api_get_optimal_hops():
+    from ..tunnel.multihop import DynamicHopPathfinder
+    pf = DynamicHopPathfinder()
+    entry, exit_node = pf.find_optimal_hop_pair()
+    return {
+        "success": True,
+        "entry": {"id": entry.node_id, "host": entry.host, "rtt": entry.rtt_ms},
+        "exit": {"id": exit_node.node_id, "host": exit_node.host, "rtt": exit_node.rtt_ms},
+        "combined_rtt": round(entry.rtt_ms + exit_node.rtt_ms, 1),
+    }
+
+
+# 5. Split Tunneling Presets
+@app.post("/api/presets/{preset_name}")
+async def api_apply_preset(preset_name: str):
+    from ..tunnel.process_router import process_matrix
+    success = process_matrix.apply_preset(preset_name)
+    return {"success": success, "preset": preset_name, "mode": process_matrix.mode, "apps": list(process_matrix.selected_apps)}
+
+
+# 6. CyberShield Whitelist API
+class WhitelistRequest(BaseModel):
+    domain: str
+
+
+@app.post("/api/adblock/whitelist/add")
+async def api_add_whitelist(req: WhitelistRequest):
+    from ..tunnel.adblock import shield_instance
+    shield_instance.add_whitelist([req.domain])
+    return {"success": True, "whitelist_count": len(shield_instance._whitelist)}
+
+
+@app.post("/api/adblock/whitelist/remove")
+async def api_remove_whitelist(req: WhitelistRequest):
+    from ..tunnel.adblock import shield_instance
+    shield_instance.remove_whitelist(req.domain)
+    return {"success": True, "whitelist_count": len(shield_instance._whitelist)}
 
 
 @app.websocket("/ws/telemetry")

@@ -103,6 +103,15 @@ async def create_udp_client(
         lambda: UDPClientProtocol(on_packet_received, on_connection_lost),
         remote_addr=(server_host, server_port),
     )
+    # High-throughput 4MB socket buffer tuning
+    sock = transport.get_extra_info("socket")
+    if sock:
+        try:
+            import socket
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
+        except Exception as e:
+            logger.debug(f"Socket buffer tuning notice: {e}")
     return transport, protocol
 
 
@@ -117,4 +126,13 @@ async def create_udp_server(
         lambda: UDPServerProtocol(on_packet_received),
         local_addr=(listen_host, listen_port),
     )
+    # High-throughput 4MB socket buffer tuning
+    sock = transport.get_extra_info("socket")
+    if sock:
+        try:
+            import socket
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4 * 1024 * 1024)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
+        except Exception as e:
+            logger.debug(f"Socket buffer tuning notice: {e}")
     return transport, protocol
